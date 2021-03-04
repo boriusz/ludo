@@ -4,6 +4,7 @@ import { Room } from "./entity/Room";
 const express = require("express");
 const router = express.Router();
 import { connection } from "./index";
+import { v4 as uuidv4 } from "uuid";
 
 router.get("/", (req: Request, res: Response) => {
   if (!req.session?.user?.name) {
@@ -23,6 +24,7 @@ router.post(
     req.session.user = {
       name: encodeURIComponent(req.body.username),
       inGame: false,
+      userID: uuidv4(),
     };
     next(res.redirect("/"));
   }
@@ -34,7 +36,7 @@ router.post("/api/createRoom/:name", async (req: Request, res: Response) => {
   room.room_name = decodeURIComponent(req.params.name);
   room.participants = user!.name;
   room.has_started = false;
-  room.owner = user!.name;
+  room.owner = user!.userID;
   const savedData = await connection.manager.save(room);
   user!.inGame = true;
   user!.gameID = savedData.id.toString();
@@ -70,10 +72,8 @@ router.post("/api/joinRoom/:roomID", async (req: Request, res: Response) => {
 });
 
 router.get("/api/room/:roomID", async (req: Request, res: Response) => {
-  if (
-    req.session?.user?.inGame &&
-    req.session?.user?.gameID === req.params.roomID
-  ) {
+  const { user } = req.session;
+  if (user?.inGame && user?.gameID === req.params.roomID) {
     // const room = await connection.manager.findOne(Room, {
     //   id: Number(req.params.roomID),
     // });
@@ -81,7 +81,7 @@ router.get("/api/room/:roomID", async (req: Request, res: Response) => {
     //   `joined room ${req.params.roomID}, current users here: ${room?.participants}`
     // );
     res.sendFile(path.join(__dirname, "public", "lobby.html"));
-  } else if (req.session?.user?.inGame) {
+  } else if (user?.inGame) {
     res.redirect("/");
   } else {
     res.sendFile(path.join(__dirname, "public", "lobby.html"));
@@ -93,7 +93,22 @@ router.post("/api/room/:roomID", async (req: Request, res: Response) => {
     id: Number(req.params.roomID),
   });
   res.json(room);
+  // TODO: W pewnym momencie, jak gra ruszy to stąd zamiast json poleci redirect do gry albo coś w tym stylu nw jeszcze
 });
 router.use(express.static(path.join(__dirname, "public")));
+
+router.post("/api/room/:roomID/owner", async (req: Request, res: Response) => {
+  const { roomID } = req.params;
+  const { user } = req.session;
+  if (user?.inGame && user?.gameID === roomID) {
+    const room = await connection.manager.findOne(Room, {
+      id: Number(roomID),
+    });
+    const roomOwner = room?.owner;
+    res.json(roomOwner === user!.userID);
+  } else {
+    res.json("You are only watching m8");
+  }
+});
 
 export default router;
