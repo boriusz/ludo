@@ -1,22 +1,19 @@
 import "reflect-metadata";
-import { Request, Response } from "express";
-import { createConnection } from "typeorm";
-import { Room } from "./entity/Room";
-import * as path from "path";
+import { Connection, createConnection } from "typeorm";
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+import router from "./routes";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
 
 declare module "express-session" {
   export interface SessionData {
-    user: { name: string; inGame: boolean };
+    user: { name: string; inGame: boolean; gameID?: string };
   }
 }
-
-app.use(bodyParser({ extended: true }));
 
 app.use(
   session({
@@ -27,45 +24,20 @@ app.use(
   })
 );
 
+app.use(bodyParser({ extended: true }));
+
+app.use("/", router);
+
+export let connection: Connection;
+
+const createDbConnection = async () => {
+  return await createConnection();
+};
+createDbConnection().then((conn) => {
+  connection = conn;
+});
+
 const main = async () => {
-  const connection = await createConnection();
-
-  app.get("/", (req: Request, res: Response) => {
-    if (!req.session?.user?.name) {
-      res.sendFile(path.join(__dirname, "public", "username.html"));
-    } else {
-      res.sendFile(path.join(__dirname, "public", "index.html"));
-    }
-  });
-
-  app.post("/setUsername", (req: Request, res: Response) => {
-    req.session.user = { name: req.body.username, inGame: false };
-    res.redirect("/");
-  });
-
-  // TODO: Tutaj normalnie sobie lece i sprawdzam z sesji jak się użytkownik nazywa i auto go dołączam
-  app.post("/api/createRoom/:name", async (req: Request, res: Response) => {
-    const room = new Room();
-    room.room_name = decodeURIComponent(req.params.name);
-    room.participants = req.session.user.name;
-    room.has_started = false;
-    await connection.manager.save(room);
-    const roomList = await connection.manager.find(Room);
-    req.session.user.inGame = true;
-    res.json(roomList);
-  });
-
-  app.get("/api/getRoomList", async (_: Request, res: Response) => {
-    const roomList = await connection.manager.find(Room);
-    res.json(roomList);
-  });
-
-  app.post("/api/joinRoom/:roomID", async (req: Request, res: Response) => {
-    console.log(req.session.user.name, " joining room ", req.params.roomID);
-  });
-
-  app.use(express.static(path.join(__dirname, "public")));
-
   app.listen(PORT, () => console.log(`App listening on port: ${PORT}`));
 };
 try {

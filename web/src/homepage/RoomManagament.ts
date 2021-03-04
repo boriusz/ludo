@@ -1,4 +1,4 @@
-import { RoomInterface } from "./types";
+import { RoomInterface } from "../types";
 
 export default class RoomManagament {
   private static serverAddress: string = `http://localhost:4000/api/`;
@@ -19,13 +19,12 @@ export default class RoomManagament {
       ? (roomName = inputElementValue)
       : (roomName = "new room");
     const address = `${RoomManagament.serverAddress}createRoom/${roomName}`;
-    const data = await fetch(address, {
+    const response = await fetch(address, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      redirect: "follow",
     });
-    const parsedData: RoomInterface[] = await data.json();
-    return parsedData;
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
   }
 }

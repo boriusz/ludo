@@ -1,4 +1,4 @@
-import { RoomInterface } from "./types";
+import { RoomInterface } from "../types";
 
 export default class Room {
   private readonly id: number;
@@ -13,7 +13,7 @@ export default class Room {
     this.roomName = room_name;
   }
 
-  getHTMLElement() {
+  getHTMLElement(): HTMLElement {
     let participantsCounter = 0;
     const container: HTMLElement = document.createElement("div");
     container.setAttribute("roomID", this.id.toString());
@@ -29,7 +29,7 @@ export default class Room {
       participantsCounter++;
       const li = document.createElement("li");
       li.className = "participant-item";
-      li.innerText = participant;
+      li.innerText = decodeURIComponent(participant);
       participantsList.appendChild(li);
     });
     const counter = document.createElement("div");
@@ -46,6 +46,20 @@ export default class Room {
     const joinButton = document.createElement("button");
     joinButton.innerText = "Join";
     joinButton.className = "button join";
+    joinButton.addEventListener("click", async () => {
+      const response = await fetch(
+        `http://localhost:4000/api/joinRoom/${this.id}`,
+        {
+          method: "POST",
+          redirect: "follow",
+        }
+      );
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else {
+        alert(await response.json());
+      }
+    });
 
     const watchButton = document.createElement("button");
     watchButton.innerText = "Watch";

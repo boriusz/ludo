@@ -1,4 +1,4 @@
-import { RoomInterface } from "./types";
+import { RoomInterface } from "../types";
 import Room from "./Room.js";
 
 const roomContainer = document.querySelector("#room-container")!;

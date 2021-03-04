@@ -6,8 +6,7 @@ const createButton = document.querySelector<HTMLInputElement>(
 )!;
 
 createButton.addEventListener("click", async () => {
-  const data = await RoomManagament.createNewRoom();
-  Visuals.drawRooms(data);
+  await RoomManagament.createNewRoom();
 });
 
 window.addEventListener("load", async () => {
