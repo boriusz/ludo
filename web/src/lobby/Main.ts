@@ -16,6 +16,8 @@ const lobbyContainer = document.querySelector("#lobby-wrapper")!;
 window.addEventListener("load", async () => {
   const data = await fetchData();
   const lobby = new Lobby(data);
+  const header = document.querySelector("header")!;
+  header.innerHTML = `<h1>${lobby.roomName}</h1>`;
   lobbyContainer.innerHTML = "";
   lobbyContainer.appendChild(lobby.getHTMLElement());
 });
@@ -26,4 +28,4 @@ window.setInterval(async () => {
   const lobby = new Lobby(data);
   lobbyContainer.innerHTML = "";
   lobbyContainer.appendChild(lobby.getHTMLElement());
-}, 5000);
+}, 50000);

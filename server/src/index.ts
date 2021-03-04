@@ -11,7 +11,7 @@ const app = express();
 
 declare module "express-session" {
   export interface SessionData {
-    user: { name: string; inGame: boolean; gameID?: string };
+    user: { name: string; inGame: boolean; userID: string; gameID?: string };
   }
 }
 

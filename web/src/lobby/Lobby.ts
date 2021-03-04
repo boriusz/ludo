@@ -4,7 +4,7 @@ export default class Lobby {
   private readonly id: number;
   private hasStarted: boolean;
   private participants: string;
-  private readonly roomName: string;
+  public readonly roomName: string;
   private owner: string;
 
   constructor({
@@ -21,20 +21,20 @@ export default class Lobby {
     this.owner = owner;
   }
 
-  checkIfIsOwner(): boolean {
-    // TODO: tutaj sobie sprawdzam czy aktualny jest ownerem z serwera i dalej na podstawie tego renderuje odpowiednie przyciski itd.
-    return false
+  async checkIfIsOwner() {
+    const url = window.location.href;
+    const ownershipAuth = await fetch(url + "/owner", {
+      method: "POST",
+    });
+    console.log(await ownershipAuth.json());
   }
 
   getHTMLElement(): HTMLElement {
     const container = document.createElement("div");
     container.className = "lobby-container";
 
-    const roomName = document.createElement("h1");
-    roomName.innerText = this.roomName;
-    roomName.className = "room-name";
-
     const list = document.createElement("ul");
+    list.className = "participants-container";
     this.participants.split(" ").forEach((participant) => {
       const child = document.createElement("li");
       participant === this.owner
@@ -48,9 +48,14 @@ export default class Lobby {
     state.innerText = this.hasStarted.toString();
     state.className = "game-status";
 
-    container.appendChild(roomName);
+    const owner = document.createElement("button");
+    owner.addEventListener("click", async () => {
+      await this.checkIfIsOwner();
+    });
+
     container.appendChild(list);
     container.appendChild(state);
+    container.appendChild(owner);
 
     return container;
   }

@@ -1,0 +1,49 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 24px;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    background: rgba(169, 169, 169, 0.2);
+}
+
+header {
+    font-family: "Droid Sans Mono Slashed", cursive;
+    color: #48E09F;
+    text-align: center;
+    background: tomato;
+    line-height: 3rem;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.participants-container {
+    width: 80vw;
+    background: rgba(0,0,0, .5);
+    display: flex;
+    flex-direction: row;
+    line-height: 6rem;
+    padding: 0 2rem;
+}
+
+.participants-container > li {
+    list-style-type: none;
+    flex-basis: 25%;
+}
+
+#lobby-wrapper {
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
