@@ -1,5 +1,5 @@
 import { RoomInterface } from "../types";
-import Room from "./Room";
+import RoomHomepage from "./RoomHomepage.js";
 
 const roomContainer = document.querySelector("#room-container")!;
 
@@ -9,7 +9,7 @@ export default class RoomManagament {
   public static drawRoomList(roomList: RoomInterface[]) {
     roomContainer.innerHTML = "";
     roomList.forEach((room: RoomInterface) => {
-      const newRoom = new Room(room);
+      const newRoom = new RoomHomepage(room);
       roomContainer.appendChild(newRoom.getHTMLElement());
     });
   }
@@ -30,7 +30,9 @@ export default class RoomManagament {
     inputElementValue
       ? (roomName = inputElementValue)
       : (roomName = "new room");
-    const address = `${RoomManagament.serverAddress}createRoom/${roomName}`;
+    const address = `${
+      RoomManagament.serverAddress
+    }createRoom/${encodeURIComponent(roomName)}`;
     const response = await fetch(address, {
       method: "POST",
       redirect: "follow",
@@ -43,5 +45,4 @@ export default class RoomManagament {
       alert(errorMessage);
     }
   }
-
 }

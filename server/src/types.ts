@@ -1,5 +1,8 @@
 export interface GameData {
-  name: string;
-  uuid: string;
-  state: number;
+  [id: string]: {
+    name: string;
+    isOwner: boolean;
+    state: number;
+    position: string;
+  };
 }

@@ -9,22 +9,28 @@ const express = require("express");
 const apiRouter = express.Router();
 
 apiRouter.post("/createRoom/:name", async (req: Request, res: Response) => {
-  const { name } = req.params; // Room name
+  const { name } = req.params; // RoomHomepage name
   const { user } = req.session; // User
-  if (name.length > 10) {
+  if (name.length > 15) {
     res.json("room name too long"); // Validate room name, maybe some regex would be great
   } else {
     const room = new Room(); // Creating new room
     room.room_name = decodeURIComponent(name);
     // Later, when game will be working, it should contain all of its data, like players positions etc
+    const id: string = user!.userID;
+
     room.data = JSON.stringify([
       {
-        name: user?.name,
-        uuid: user?.userID,
-        state: 0,
+        [id]: {
+          name: user!.name,
+          isOwner: true,
+          state: 0,
+          position: "",
+        },
       },
     ]);
-    // Room config, isnt started so others can join to play
+
+    // RoomHomepage config, isnt started so others can join to play
     room.has_started = false;
     room.owner = user!.name;
     room.ownerID = user!.userID; // it is used to validate whether user can change room, kick players etc. its uuid
@@ -41,7 +47,10 @@ apiRouter.get("/getRoomList", async (_: Request, res: Response) => {
     const data: GameData[] = JSON.parse(room.data); // we need to parse data to json in order to iterate over it
     const names = JSON.stringify(
       data.map(
-        (item: GameData) => item.name // in Room list we kinda only want participants names
+        (item: GameData) => {
+          const values = Object.values(item)[0];
+          return values.name;
+        } // in RoomHomepage list we kinda only want participants names
       )
     );
     return {
@@ -70,14 +79,15 @@ apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
   // If room is not found return some error message
   else {
     const roomData = JSON.parse(room.data);
-    console.log(roomData);
-    console.log(roomData.length);
     if (roomData.length < 4 && user) {
       const obj = {
-        name: user.name,
-        uuid: user.userID,
-        state: 0,
-        // Lately, initial positions etc
+        [user.userID]: {
+          name: user.name,
+          isOwner: false,
+          state: 0,
+          position: "",
+          // Lately, initial positions etc
+        },
       };
       user.inGame = true;
       user.gameID = roomID;
@@ -86,7 +96,7 @@ apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
       res.redirect(`/api/room/${roomID}`); // redirect to room
     } else {
       // room is already full
-      res.json("Room is already full, but you can still watch");
+      res.json("RoomHomepage is already full, but you can still watch");
     }
     await connection.manager.save(room);
   }
@@ -94,16 +104,30 @@ apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
 
 apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
   const { user } = req.session;
-  if (user) {
+  if (user?.gameID && user.inGame) {
     const currentRoom = await connection.manager.findOne(Room, {
       id: Number(user.gameID),
     });
     if (currentRoom) {
       let { data } = currentRoom;
       let parsedData: GameData[] = JSON.parse(data);
-      parsedData = parsedData.filter((el) => el.uuid !== user.userID); // filter to remove user from room data
+      parsedData = parsedData.filter((element: GameData) => {
+        if (Object.keys(element)[0] !== user.userID) {
+          return element;
+        }
+        return;
+      });
       currentRoom.data = JSON.stringify(parsedData); // save filtered data
-      await connection.manager.save(currentRoom);
+      if (user.userID === currentRoom.ownerID) {
+        await connection.manager.delete(Room, {
+          id: Number(user.gameID),
+        });
+        return;
+      } else {
+        user.inGame = false;
+        user.gameID = null;
+        await connection.manager.save(currentRoom);
+      }
     }
   }
   res.redirect("/");
@@ -111,6 +135,17 @@ apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
 
 apiRouter.get("/room/:roomID", async (req: Request, res: Response) => {
   const { user } = req.session;
+  const room = await connection.manager.findOne(Room, {
+    id: Number(req.params.roomID),
+  });
+  if (!room) {
+    if (user) {
+      user.inGame = false;
+      user.gameID = null;
+    }
+    res.redirect("/");
+    return;
+  }
   if (user?.inGame && user?.gameID === req.params.roomID) {
     res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
   } else if (user?.inGame) {
@@ -125,15 +160,19 @@ apiRouter.post("/room/:roomID", async (req: Request, res: Response) => {
     id: Number(req.params.roomID),
   });
   if (room) {
-    let data = JSON.parse(room.data);
+    let obj: GameData[] = JSON.parse(room.data);
+    let data: any;
+    const items = obj.map((data1: GameData) => {
+      return Object.values(data1)[0];
+    });
     const { id, has_started, owner, room_name } = room;
     data = JSON.stringify(
-      data.map((element: any) => {
+      items.map((element) => {
         const { name, state } = element;
         return { name, state };
       })
     );
-    res.json({ id, data, has_started,  room_name, owner});
+    res.json({ id, data, has_started, room_name, owner });
   } else {
     res.json("there is no room :CC");
   }
@@ -146,11 +185,63 @@ apiRouter.post("/room/:roomID/owner", async (req: Request, res: Response) => {
     const room = await connection.manager.findOne(Room, {
       id: Number(roomID),
     });
-    const roomOwner = room?.owner;
+    const roomOwner = room?.ownerID;
     res.json(roomOwner === user!.userID);
   } else {
-    res.json("You are only watching m8");
+    res.json(false);
   }
 });
+
+apiRouter.post(
+  "/room/:roomID/ready/:isReady",
+  async (req: Request, _res: Response) => {
+    const { roomID, isReady } = req.params;
+    const { user } = req.session;
+    if (user?.inGame && user?.gameID === roomID) {
+      const room = await connection.manager.findOne(Room, {
+        id: Number(roomID),
+      });
+      if (room) {
+        const { data } = room;
+        const parsedData = JSON.parse(data);
+        const userInDb = parsedData.find(
+          (el: string) => Object.keys(el)[0] === user.userID
+        );
+        const id: string = user.userID;
+        if (isReady === "true") {
+          userInDb[id].state = 1;
+        } else {
+          userInDb[id].state = 0;
+        }
+        room.data = JSON.stringify(parsedData);
+        await connection.manager.save(room);
+      }
+    }
+  }
+);
+
+apiRouter.post(
+  "/room/:roomID/isParticipant",
+  async (req: Request, res: Response) => {
+    const { user } = req.session;
+    const room = await connection.manager.findOne(Room, {
+      id: Number(req.params.roomID),
+    });
+    if (user?.userID && room) {
+      const parsedRoomData = JSON.parse(room!.data);
+      const roomMembers = parsedRoomData.map(
+        (el: GameData) => Object.keys(el)[0]
+      );
+      if (roomMembers.find((el: string) => el === user?.userID)) {
+        res.json(true);
+      } else {
+        res.json(false);
+      }
+      return;
+    } else {
+      res.json(false);
+    }
+  }
+);
 
 export default apiRouter;

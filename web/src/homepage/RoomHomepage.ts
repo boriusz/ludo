@@ -1,7 +1,6 @@
 import { RoomInterface } from "../types";
 
-
-export default class Room {
+export default class RoomHomepage {
   private readonly id: number;
   private hasStarted: boolean;
   private readonly data: string;
@@ -68,6 +67,9 @@ export default class Room {
     const watchButton = document.createElement("button");
     watchButton.innerText = "Watch";
     watchButton.className = "button watch";
+    watchButton.addEventListener("click", async () => {
+      window.location.href = `http://localhost:4000/api/room/${this.id}`;
+    });
 
     buttonContainer.appendChild(joinButton);
     buttonContainer.appendChild(watchButton);
