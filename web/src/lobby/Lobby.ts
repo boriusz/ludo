@@ -1,62 +1,41 @@
-import { RoomInterface } from "../types";
+import { GameData, RoomInterface } from "../types";
+
+const lobbyContainer = document.querySelector(".lobby-container")!;
+const gameStatus = <HTMLElement>document.querySelector(".game-status")!;
 
 export default class Lobby {
-  private readonly id: number;
   private hasStarted: boolean;
-  private participants: string;
+  private readonly data: string;
   public readonly roomName: string;
-  private owner: string;
 
-  constructor({
-    id,
-    has_started,
-    participants,
-    room_name,
-    owner,
-  }: RoomInterface) {
-    this.id = id;
+  constructor({ has_started, data, room_name  }: RoomInterface) {
     this.hasStarted = has_started;
-    this.participants = participants;
+    this.data = data;
     this.roomName = room_name;
-    this.owner = owner;
   }
 
-  async checkIfIsOwner() {
+  async checkIfIsOwner(): Promise<boolean> {
     const url = window.location.href;
     const ownershipAuth = await fetch(url + "/owner", {
       method: "POST",
     });
-    console.log(await ownershipAuth.json());
+    return await ownershipAuth.json();
   }
 
-  getHTMLElement(): HTMLElement {
-    const container = document.createElement("div");
-    container.className = "lobby-container";
-
-    const list = document.createElement("ul");
-    list.className = "participants-container";
-    this.participants.split(" ").forEach((participant) => {
+  updateHTMLElement(): void {
+    const temporaryList = document.createElement("ul");
+    temporaryList.id = "participants-container";
+    const parsedData = JSON.parse(this.data);
+    parsedData.forEach(async (participant: GameData) => {
       const child = document.createElement("li");
-      participant === this.owner
-        ? (child.className = "participant")
-        : (child.className = "owner");
-      child.innerText = decodeURIComponent(participant);
-      list.appendChild(child);
+      const isOwner = await this.checkIfIsOwner();
+      // TODO :tutaj na podstawie tego czy isowner true renderujemy fajne przyciski
+      isOwner ? (child.className = "owner") : (child.className = "participant");
+      child.innerText = decodeURIComponent(participant.name);
+      temporaryList.appendChild(child);
     });
+    lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);
 
-    const state = document.createElement("div");
-    state.innerText = this.hasStarted.toString();
-    state.className = "game-status";
-
-    const owner = document.createElement("button");
-    owner.addEventListener("click", async () => {
-      await this.checkIfIsOwner();
-    });
-
-    container.appendChild(list);
-    container.appendChild(state);
-    container.appendChild(owner);
-
-    return container;
+    gameStatus.innerText = this.hasStarted.toString();
   }
 }

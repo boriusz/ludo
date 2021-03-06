@@ -1,9 +1,12 @@
 export interface RoomInterface {
   id: number;
-  participants: string;
+  data: string;
   has_started: boolean;
   room_name: string;
   owner: string;
-  created_at: Date;
-  updated_at: Date;
+}
+export interface GameData {
+  name: string;
+  uuid: string;
+  state: number;
 }

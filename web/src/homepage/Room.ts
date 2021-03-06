@@ -1,15 +1,16 @@
 import { RoomInterface } from "../types";
 
+
 export default class Room {
   private readonly id: number;
   private hasStarted: boolean;
-  private participants: string;
+  private readonly data: string;
   private readonly roomName: string;
 
-  constructor({ id, has_started, participants, room_name }: RoomInterface) {
+  constructor({ id, has_started, data, room_name }: RoomInterface) {
     this.id = id;
     this.hasStarted = has_started;
-    this.participants = participants;
+    this.data = data;
     this.roomName = room_name;
   }
 
@@ -25,7 +26,10 @@ export default class Room {
 
     const participantsList = document.createElement("ul");
     participantsList.className = "participants-container";
-    this.participants.split(" ").forEach((participant) => {
+    console.log(this.data);
+    const parsedData = JSON.parse(this.data);
+
+    parsedData.forEach((participant: string) => {
       participantsCounter++;
       const li = document.createElement("li");
       li.className = "participant-item";

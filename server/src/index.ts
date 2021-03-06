@@ -1,10 +1,12 @@
 import "reflect-metadata";
 import { Connection, createConnection } from "typeorm";
+import path from "path";
+import appRouter from "./routes/routes";
+import apiRouter from "./routes/api";
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-import router from "./routes";
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -26,7 +28,10 @@ app.use(
 
 app.use(bodyParser({ extended: true }));
 
-app.use("/", router);
+app.use("/", appRouter);
+app.use("/api", apiRouter);
+
+app.use(express.static(path.join(__dirname, "public")));
 
 export let connection: Connection;
 
@@ -38,10 +43,10 @@ createDbConnection().then((conn) => {
 });
 
 const main = async () => {
-  app.listen(PORT, () => console.log(`App listening on port: ${PORT}`));
+  app.listen(PORT);
 };
 try {
-  main();
+  main().then(() => console.log(`App opened on: http://localhost:${PORT}`));
 } catch (e) {
   console.log(e);
 }

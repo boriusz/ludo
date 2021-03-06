@@ -12,20 +12,27 @@ const fetchData = async () => {
 };
 
 const lobbyContainer = document.querySelector("#lobby-wrapper")!;
+const header = document.querySelector("#header")!;
+let lobby: Lobby
 
-window.addEventListener("load", async () => {
+(async () => {
   const data = await fetchData();
-  const lobby = new Lobby(data);
-  const header = document.querySelector("header")!;
+  lobby = new Lobby(data);
   header.innerHTML = `<h1>${lobby.roomName}</h1>`;
-  lobbyContainer.innerHTML = "";
-  lobbyContainer.appendChild(lobby.getHTMLElement());
-});
+  const managemenetButtonContainer = document.createElement("div");
+  lobbyContainer.appendChild(managemenetButtonContainer);
+  lobby.updateHTMLElement();
+})();
 
 window.setInterval(async () => {
   const data = await fetchData();
-  console.log(data);
-  const lobby = new Lobby(data);
-  lobbyContainer.innerHTML = "";
-  lobbyContainer.appendChild(lobby.getHTMLElement());
-}, 50000);
+  lobby = new Lobby(data);
+  lobby.updateHTMLElement();
+}, 5000);
+
+window.addEventListener("beforeunload", async () => {
+  await fetch("/api/leaveRoom", {
+    method: "POST",
+    redirect: "follow",
+  });
+});

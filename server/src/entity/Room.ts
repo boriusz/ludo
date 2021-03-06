@@ -12,7 +12,7 @@ export class Room {
   id: number;
 
   @Column()
-  participants: string;
+  data: string;
 
   @Column()
   has_started: boolean;
@@ -22,6 +22,9 @@ export class Room {
 
   @Column()
   owner: string;
+
+  @Column()
+  ownerID: string;
 
   @CreateDateColumn()
   created_at: Date;

@@ -5,10 +5,29 @@
     <title>Username</title>
 </head>
 <body style="height: 100vh;background: rgba(0,0,0, 0.5); display: flex; justify-content: center; align-items: center">
-<form method="post" action="/setUsername">
     <input id="text" type="text" name="username" placeholder="Podaj swój nick">
     <input id="submit" type="submit" value="Ustaw">
-</form>
+<script>
+    const text = document.querySelector('#text')
+    const submit = document.querySelector('#submit')
 
+    submit.addEventListener('click', async () => {
+        const username = text.value
+        const body = JSON.stringify({username})
+        console.log(body)
+        const response = await fetch('/setUsername', {
+            method: "POST",
+            headers: {'Content-Type' : 'application/json'},
+            body,
+            redirect: 'follow'
+        })
+        if (response.redirected) {
+            window.location.href = response.url
+        } else {
+            const errorMessage = await response.json()
+            alert(errorMessage)
+        }
+    })
+</script>
 </body>
 </html>

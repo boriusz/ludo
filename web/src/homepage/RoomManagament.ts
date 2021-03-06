@@ -1,12 +1,24 @@
 import { RoomInterface } from "../types";
+import Room from "./Room";
+
+const roomContainer = document.querySelector("#room-container")!;
 
 export default class RoomManagament {
   private static serverAddress: string = `http://localhost:4000/api/`;
+
+  public static drawRoomList(roomList: RoomInterface[]) {
+    roomContainer.innerHTML = "";
+    roomList.forEach((room: RoomInterface) => {
+      const newRoom = new Room(room);
+      roomContainer.appendChild(newRoom.getHTMLElement());
+    });
+  }
 
   public static async getRoomList() {
     const address = `${RoomManagament.serverAddress}getRoomList`;
     const roomList = await fetch(address);
     const parsedRoomList: RoomInterface[] = await roomList.json();
+    console.log(parsedRoomList);
     return parsedRoomList;
   }
 
@@ -25,6 +37,11 @@ export default class RoomManagament {
     });
     if (response.redirected) {
       window.location.href = response.url;
+    } else {
+      //TODO:  w przyszlosci ladne modale :))
+      const errorMessage = await response.json();
+      alert(errorMessage);
     }
   }
+
 }

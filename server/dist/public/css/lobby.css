@@ -27,7 +27,7 @@ header {
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
-.participants-container {
+#participants-container {
     width: 80vw;
     background: rgba(0,0,0, .5);
     display: flex;
@@ -36,7 +36,7 @@ header {
     padding: 0 2rem;
 }
 
-.participants-container > li {
+#participants-container > li {
     list-style-type: none;
     flex-basis: 25%;
 }
