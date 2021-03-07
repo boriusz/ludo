@@ -20,6 +20,9 @@ export default class Lobby {
     const parsedData = JSON.parse(this.data);
     parsedData.forEach(async (participant: GameData) => {
       const child = document.createElement("li");
+      participant.state === 1
+        ? (child.style.background = "green")
+        : (child.style.background = "red");
       child.innerText = decodeURIComponent(participant.name);
       temporaryList.appendChild(child);
     });

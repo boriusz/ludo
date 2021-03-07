@@ -1,8 +1,8 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 
@@ -25,6 +25,9 @@ export class Room {
 
   @Column()
   ownerID: string;
+
+  @Column({ nullable: true, type: "timestamp" })
+  time_to_begin: Date | null;
 
   @CreateDateColumn()
   created_at: Date;

@@ -3,11 +3,10 @@ import { currentURL } from "./Main.js";
 const participantsContainer = document.querySelector(
   "#participants-container"
 )!;
+const buttonWrapper = document.querySelector("#button-wrapper")!;
 
 export default class OptionalRendering {
   public static renderParticipantView() {
-    console.log("rendering participant view");
-
     const wrapper = document.createElement("div");
     wrapper.id = "ready-button-wrapper";
 
@@ -42,6 +41,14 @@ export default class OptionalRendering {
   }
 
   public static renderOwnerView() {
-    console.log("he is owner man");
+    const startButton = document.createElement("button");
+    startButton.addEventListener("click", async () => {
+      const response = await fetch(`${currentURL}/start`, { method: "POST" });
+      const json = await response.json();
+      console.log(json);
+    });
+    startButton.innerText = "Start";
+    buttonWrapper.innerHTML = "";
+    buttonWrapper.appendChild(startButton);
   }
 }

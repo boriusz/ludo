@@ -4,7 +4,7 @@ import RoomHomepage from "./RoomHomepage.js";
 const roomContainer = document.querySelector("#room-container")!;
 
 export default class RoomManagament {
-  private static serverAddress: string = `http://localhost:4000/api/`;
+  private static serverAddress: string = window.location.href + "api/";
 
   public static drawRoomList(roomList: RoomInterface[]) {
     roomContainer.innerHTML = "";
@@ -18,7 +18,6 @@ export default class RoomManagament {
     const address = `${RoomManagament.serverAddress}getRoomList`;
     const roomList = await fetch(address);
     const parsedRoomList: RoomInterface[] = await roomList.json();
-    console.log(parsedRoomList);
     return parsedRoomList;
   }
 

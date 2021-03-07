@@ -1,5 +1,7 @@
 import { RoomInterface } from "../types";
 
+const url = window.location.href;
+
 export default class RoomHomepage {
   private readonly id: number;
   private hasStarted: boolean;
@@ -50,13 +52,11 @@ export default class RoomHomepage {
     joinButton.innerText = "Join";
     joinButton.className = "button join";
     joinButton.addEventListener("click", async () => {
-      const response = await fetch(
-        `http://localhost:4000/api/joinRoom/${this.id}`,
-        {
-          method: "POST",
-          redirect: "follow",
-        }
-      );
+      console.log(url);
+      const response = await fetch(`${url}api/joinRoom/${this.id}`, {
+        method: "POST",
+        redirect: "follow",
+      });
       if (response.redirected) {
         window.location.href = response.url;
       } else {
@@ -68,7 +68,7 @@ export default class RoomHomepage {
     watchButton.innerText = "Watch";
     watchButton.className = "button watch";
     watchButton.addEventListener("click", async () => {
-      window.location.href = `http://localhost:4000/api/room/${this.id}`;
+      window.location.href = `${url}api/room/${this.id}`;
     });
 
     buttonContainer.appendChild(joinButton);

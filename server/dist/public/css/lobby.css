@@ -41,6 +41,7 @@ header {
     list-style-type: none;
     text-align: center;
     flex-basis: 25%;
+    flex-grow: 1;
 }
 
 @media screen and (max-width: 550px){

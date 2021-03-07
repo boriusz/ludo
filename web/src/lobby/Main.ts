@@ -4,11 +4,24 @@ import OptionalRendering from "./OptionalRendering.js";
 
 export const currentURL = window.location.href;
 
+const redirectToGame = (url: string) => {
+  window.location.href = url;
+};
+
 const fetchData = async () => {
   const data = await fetch(currentURL, {
     method: "POST",
+    redirect: "follow",
   });
+  if (data.redirected) {
+    redirectToGame(data.url);
+  }
   const parsedData: RoomInterface = await data.json();
+  if (parsedData.time_to_begin) {
+    console.log(
+      (new Date(parsedData.time_to_begin).getTime() - Date.now()) / 1000
+    );
+  }
   return parsedData;
 };
 
@@ -31,7 +44,7 @@ const checkIfIsParticipant = async () => {
   return await participantAuth.json();
 };
 
-(async () => {
+const updateLobby = async () => {
   isParticipant = await checkIfIsParticipant();
   isOwner = await checkIfIsOwner();
   isParticipant ? OptionalRendering.renderParticipantView() : null;
@@ -40,11 +53,17 @@ const checkIfIsParticipant = async () => {
   lobby = new Lobby(data);
   header.innerHTML = `<h1>${lobby.roomName}</h1>`;
   lobby.updateHTMLElement();
-})();
+};
 
-window.addEventListener("beforeunload", async () => {
+updateLobby();
+
+window.setInterval(() => updateLobby(), 1000);
+
+const leaveHandle = async () => {
   await fetch("/api/leaveRoom", {
     method: "POST",
     redirect: "follow",
   });
-});
+};
+
+window.addEventListener("beforeunload", leaveHandle);

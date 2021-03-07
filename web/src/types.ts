@@ -4,6 +4,7 @@ export interface RoomInterface {
   has_started: boolean;
   room_name: string;
   owner: string;
+  time_to_begin: Date | null;
 }
 export interface GameData {
   name: string;
