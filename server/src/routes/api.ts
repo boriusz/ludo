@@ -105,7 +105,7 @@ apiRouter.get("/room/:roomID", async (req: Request, res: Response) => {
   } else {
     if (room.has_started) {
       // res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
-      res.redirect("/api/xD");
+      res.redirect(`/game/${req.params.roomID}`);
       return;
     }
     res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
@@ -129,7 +129,7 @@ apiRouter.post("/room/:roomID", async (req: Request, res: Response) => {
       if (new Date(room.time_to_begin).getTime() - Date.now() < 0) {
         room.has_started = true;
         await connection.manager.save(room);
-        res.redirect("/api/xD");
+        res.redirect(`game/${req.params.roomID}`);
         // TODO : Redirect na gre esa
         return;
       }
@@ -236,10 +236,6 @@ apiRouter.post("/room/:roomID/start", async (req: Request, res: Response) => {
   } else {
     res.json("you are not an owner/");
   }
-});
-
-apiRouter.get("/xD", (_: Request, res: Response) => {
-  res.send("xd");
 });
 
 apiRouter.post("/room/:roomID/owner", async (req: Request, res: Response) => {
