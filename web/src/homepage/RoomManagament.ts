@@ -16,7 +16,10 @@ export default class RoomManagament {
 
   public static async getRoomList() {
     const address = `${RoomManagament.serverAddress}getRoomList`;
-    const roomList = await fetch(address);
+    const roomList = await fetch(address, { redirect: "follow" });
+    if (roomList.redirected) {
+      window.location.href = roomList.url;
+    }
     const parsedRoomList: RoomInterface[] = await roomList.json();
     return parsedRoomList;
   }

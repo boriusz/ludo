@@ -13,7 +13,9 @@ const fetchData = async () => {
     method: "POST",
     redirect: "follow",
   });
+  //
   if (data.redirected) {
+    console.log(data.url);
     redirectToGame(data.url);
   }
   const parsedData: RoomInterface = await data.json();
@@ -27,8 +29,6 @@ const fetchData = async () => {
 
 const header = document.querySelector("#header")!;
 let lobby: Lobby;
-let isParticipant: boolean;
-let isOwner: boolean;
 
 const checkIfIsOwner = async () => {
   const ownershipAuth = await fetch(currentURL + "/owner", {
@@ -45,12 +45,11 @@ const checkIfIsParticipant = async () => {
 };
 
 const updateLobby = async () => {
-  isParticipant = await checkIfIsParticipant();
-  isOwner = await checkIfIsOwner();
-  isParticipant ? OptionalRendering.renderParticipantView() : null;
-  isOwner ? OptionalRendering.renderOwnerView() : null;
+  if (await checkIfIsParticipant()) OptionalRendering.renderParticipantView();
+  if (await checkIfIsOwner()) OptionalRendering.renderOwnerView();
   const data = await fetchData();
   lobby = new Lobby(data);
+
   header.innerHTML = `<h1>${lobby.roomName}</h1>`;
   lobby.updateHTMLElement();
 };

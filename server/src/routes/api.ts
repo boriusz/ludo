@@ -3,7 +3,7 @@ import path from "path";
 import { connection } from "../index";
 import { Room } from "../entity/Room";
 import { GameData } from "../types";
-import { TIME_BEFORE_START } from "../constants";
+import { PLAYER_COLORS, TIME_BEFORE_START } from "../constants";
 
 const express = require("express");
 
@@ -20,14 +20,14 @@ apiRouter.post("/createRoom/:name", async (req: Request, res: Response) => {
     room.room_name = decodeURIComponent(name);
     // Later, when game will be working, it should contain all of its data, like players positions etc
     const id: string = user!.userID;
-
+    const color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
     room.data = JSON.stringify([
       {
         [id]: {
           name: user!.name,
-          isOwner: true,
           state: 0,
           position: "",
+          color,
         },
       },
     ]);
@@ -58,22 +58,39 @@ apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
   if (!room) res.json("No room");
   // If room is not found return some error message
   else {
-    const roomData = JSON.parse(room.data);
-    if (roomData.length < 4 && user && !room.has_started) {
-      const obj = {
-        [user.userID]: {
-          name: user.name,
-          isOwner: false,
-          state: 0,
-          position: "",
-          // Lately, initial positions etc
-        },
-      };
-      user.inGame = true;
-      user.gameID = roomID;
-      roomData.push(obj);
-      room.data = JSON.stringify(roomData);
-      res.redirect(`/api/room/${roomID}`); // redirect to room
+    const roomData: GameData[] = JSON.parse(room.data);
+    if (roomData.length < 4 && user) {
+      if (!room.has_started) {
+        const unavailableColors = roomData.map((player: GameData) => {
+          const playerData = Object.values(player)[0];
+          return playerData.color;
+        });
+        let color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
+        while (unavailableColors.find((el: string) => el === color)) {
+          color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
+        }
+        const obj = {
+          [user.userID]: {
+            name: user.name,
+            color,
+            state: 0,
+            position: "",
+            // Lately, initial positions etc
+          },
+        };
+        user.inGame = true;
+        user.gameID = roomID;
+        roomData.push(obj);
+        room.data = JSON.stringify(roomData);
+        res.redirect(`/api/room/${roomID}`); // redirect to room
+      } else {
+        if (room.has_started) {
+          res.json("game already started but you can still watch");
+          return;
+        }
+        // room is already full
+        res.json("Room is already full, but you can still watch");
+      }
     } else {
       if (room.has_started) {
         res.json("game already started but you can still watch");
@@ -104,7 +121,6 @@ apiRouter.get("/room/:roomID", async (req: Request, res: Response) => {
     res.redirect("/");
   } else {
     if (room.has_started) {
-      // res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
       res.redirect(`/game/${req.params.roomID}`);
       return;
     }
@@ -129,7 +145,7 @@ apiRouter.post("/room/:roomID", async (req: Request, res: Response) => {
       if (new Date(room.time_to_begin).getTime() - Date.now() < 0) {
         room.has_started = true;
         await connection.manager.save(room);
-        res.redirect(`game/${req.params.roomID}`);
+        res.redirect(`/game/${room.id}`);
         // TODO : Redirect na gre esa
         return;
       }
@@ -142,8 +158,8 @@ apiRouter.post("/room/:roomID", async (req: Request, res: Response) => {
     const { id, has_started, owner, room_name, time_to_begin } = room;
     data = JSON.stringify(
       items.map((element) => {
-        const { name, state } = element;
-        return { name, state };
+        const { name, state, color } = element;
+        return { name, state, color };
       })
     );
     res.json({ id, data, has_started, room_name, owner, time_to_begin });
@@ -152,7 +168,11 @@ apiRouter.post("/room/:roomID", async (req: Request, res: Response) => {
   }
 });
 
-apiRouter.get("/getRoomList", async (_: Request, res: Response) => {
+apiRouter.get("/getRoomList", async (req: Request, res: Response) => {
+  if (!req.session.user) {
+    res.redirect("/");
+    return;
+  }
   const roomList = await connection.manager.find(Room); // list of all rooms
   const parsedRoomList = roomList.map((room: Room) => {
     const data: GameData[] = JSON.parse(room.data); // we need to parse data to json in order to iterate over it
@@ -232,6 +252,7 @@ apiRouter.post("/room/:roomID/start", async (req: Request, res: Response) => {
       // Start game here
       room.time_to_begin = new Date(Date.now() + TIME_BEFORE_START);
       await connection.manager.save(room);
+      res.json("starting");
     }
   } else {
     res.json("you are not an owner/");
@@ -278,7 +299,7 @@ apiRouter.post(
 
 apiRouter.post(
   "/room/:roomID/ready/:isReady",
-  async (req: Request, _res: Response) => {
+  async (req: Request, res: Response) => {
     const { roomID, isReady } = req.params;
     const { user } = req.session;
     if (user?.inGame && user?.gameID === roomID) {
@@ -300,7 +321,9 @@ apiRouter.post(
           }
         }
         room.data = JSON.stringify(parsedData);
+        room.time_to_begin = null;
         await connection.manager.save(room);
+        res.json("ok");
       }
     }
   }

@@ -36,7 +36,6 @@ export default class OptionalRendering {
         method: "POST",
       });
     });
-
     participantsContainer.insertAdjacentElement("afterend", wrapper);
   }
 

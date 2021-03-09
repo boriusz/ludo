@@ -51,7 +51,6 @@ const cleanDatabase = async () => {
   const rooms: Room[] = await connection.manager.find(Room);
   for (const room of rooms) {
     const roomInactiveFor = Date.now() - room.updated_at.getTime();
-    console.log(roomInactiveFor, room);
     if (roomInactiveFor > 1000 * 60 * 5 && !room.has_started) {
       // 5 minutes inactive => delete room
       await connection.manager.delete(Room, {

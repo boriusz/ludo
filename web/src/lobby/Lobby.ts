@@ -23,7 +23,13 @@ export default class Lobby {
       participant.state === 1
         ? (child.style.background = "green")
         : (child.style.background = "red");
+      child.className = "user";
       child.innerText = decodeURIComponent(participant.name);
+      const colorMarker = document.createElement("div");
+      colorMarker.className = "color-marker";
+      colorMarker.innerText = participant.color;
+      colorMarker.style.background = participant.color;
+      child.appendChild(colorMarker);
       temporaryList.appendChild(child);
     });
     lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);

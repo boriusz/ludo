@@ -8,6 +8,6 @@ export interface RoomInterface {
 }
 export interface GameData {
   name: string;
-  uuid: string;
+  color: string;
   state: number;
 }

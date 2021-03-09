@@ -49,6 +49,9 @@ header {
         flex-direction: column;
         line-height: 3rem;
     }
+    .user {
+        flex-direction: row;
+    }
 }
 
 #lobby-wrapper {
@@ -125,4 +128,9 @@ input:checked + .slider:before {
 
 .slider.round:before {
     border-radius: 50%;
+}
+
+.user {
+    display: flex;
+    flex-direction: column-reverse;
 }
