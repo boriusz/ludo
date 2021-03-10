@@ -7,17 +7,21 @@ const appRouter = express.Router();
 
 appRouter.get("/", (req: Request, res: Response) => {
   if (!req.session?.user?.name) {
-    res.sendFile(path.join(__dirname, "../", "public", "username.html")); // Unknown user -> redirect to register
-  } else {
-    if (req.session.user!.inGame) {
-      res.redirect(`/api/room/${req.session.user!.gameID}`); // User is already in game -> redirect to game
-    } else {
-      res.sendFile(path.join(__dirname, "../", "public", "homepage.html")); // Redirect to room list
-    }
+    res.sendFile(path.join(__dirname, "../", "public", "username.html"));
+    return;
   }
+  if (req.session.user!.inGame) {
+    res.redirect("/api/room");
+    return;
+  }
+  res.redirect("/automatic/joinGame");
 });
 
 appRouter.post("/setUsername", (req: Request, res: Response) => {
+  if (req.session.user) {
+    res.redirect("/");
+    return;
+  }
   const { username } = req.body;
   if (username.length > 10) {
     res.json("too long name"); // Validate username length

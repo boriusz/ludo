@@ -28,14 +28,6 @@ export default class OptionalRendering {
     wrapper.appendChild(readyDescription);
     wrapper.appendChild(label);
 
-    input.addEventListener("click", async () => {
-      input.checked
-        ? (readyDescription!.innerText = `I'm ready`)
-        : (readyDescription!.innerText = `I'm waiting`);
-      await fetch(`${currentURL}/ready/${input.checked}`, {
-        method: "POST",
-      });
-    });
     participantsContainer.insertAdjacentElement("afterend", wrapper);
   }
 

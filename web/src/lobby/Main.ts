@@ -1,6 +1,5 @@
 import Lobby from "./Lobby.js";
 import { RoomInterface } from "../types";
-import OptionalRendering from "./OptionalRendering.js";
 
 export const currentURL = window.location.href;
 
@@ -13,7 +12,7 @@ const fetchData = async () => {
     method: "POST",
     redirect: "follow",
   });
-  //
+  console.log(data.redirected);
   if (data.redirected) {
     console.log(data.url);
     redirectToGame(data.url);
@@ -30,33 +29,16 @@ const fetchData = async () => {
 const header = document.querySelector("#header")!;
 let lobby: Lobby;
 
-const checkIfIsOwner = async () => {
-  const ownershipAuth = await fetch(currentURL + "/owner", {
-    method: "POST",
-  });
-  return await ownershipAuth.json();
-};
-
-const checkIfIsParticipant = async () => {
-  const participantAuth = await fetch(currentURL + "/isParticipant", {
-    method: "POST",
-  });
-  return await participantAuth.json();
-};
-
 const updateLobby = async () => {
-  if (await checkIfIsParticipant()) OptionalRendering.renderParticipantView();
-  if (await checkIfIsOwner()) OptionalRendering.renderOwnerView();
   const data = await fetchData();
   lobby = new Lobby(data);
-
   header.innerHTML = `<h1>${lobby.roomName}</h1>`;
   lobby.updateHTMLElement();
 };
 
-updateLobby();
-
-window.setInterval(() => updateLobby(), 1000);
+updateLobby().then(() => {
+  window.setInterval(() => updateLobby(), 1000);
+});
 
 const leaveHandle = async () => {
   await fetch("/api/leaveRoom", {
@@ -64,5 +46,19 @@ const leaveHandle = async () => {
     redirect: "follow",
   });
 };
+
+const readyButton = document.querySelector<HTMLInputElement>("#ready-button")!;
+const readyDescription = document.querySelector<HTMLElement>(
+  "#ready-description"
+)!;
+
+readyButton.addEventListener("click", async () => {
+  readyButton.checked
+    ? (readyDescription!.innerText = `I'm ready`)
+    : (readyDescription!.innerText = `I'm waiting`);
+  await fetch(`${currentURL}/ready/${readyButton.checked}`, {
+    method: "POST",
+  });
+});
 
 window.addEventListener("beforeunload", leaveHandle);

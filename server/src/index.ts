@@ -5,6 +5,8 @@ import appRouter from "./routes/routes";
 import apiRouter from "./routes/api";
 import gameRouter from "./routes/gameRouter";
 import { Room } from "./entity/Room";
+import automaticRouter from "./routes/automatic";
+import { AutomaticRoom } from "./entity/AutomaticRoom";
 
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -19,7 +21,7 @@ declare module "express-session" {
       name: string;
       inGame: boolean;
       userID: string;
-      gameID?: string | null;
+      gameID?: number | null;
     };
   }
 }
@@ -38,6 +40,7 @@ app.use(bodyParser.json());
 app.use("/", appRouter);
 app.use("/api", apiRouter);
 app.use("/game", gameRouter);
+app.use("/automatic", automaticRouter);
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -48,11 +51,10 @@ const createDbConnection = async () => {
 };
 
 const cleanDatabase = async () => {
-  const rooms: Room[] = await connection.manager.find(Room);
+  const rooms: AutomaticRoom[] = await connection.manager.find(AutomaticRoom);
   for (const room of rooms) {
     const roomInactiveFor = Date.now() - room.updated_at.getTime();
     if (roomInactiveFor > 1000 * 60 * 5 && !room.has_started) {
-      // 5 minutes inactive => delete room
       await connection.manager.delete(Room, {
         id: room.id,
       });
