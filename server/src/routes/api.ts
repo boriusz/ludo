@@ -6,12 +6,13 @@ import { GameData } from "../types";
 import { PLAYER_COLORS, TIME_BEFORE_START } from "../constants";
 
 const express = require("express");
+const argon = require("argon2");
 
 const apiRouter = express.Router();
 
 // Create room
-apiRouter.post("/createRoom/:name", async (req: Request, res: Response) => {
-  const { name } = req.params; // RoomHomepage name
+apiRouter.post("/createRoom", async (req: Request, res: Response) => {
+  const { name, password } = req.body; // RoomHomepage name
   const { user } = req.session; // User
   if (name.length > 15) {
     res.json("room name too long"); // Validate room name, maybe some regex would be great
@@ -32,6 +33,9 @@ apiRouter.post("/createRoom/:name", async (req: Request, res: Response) => {
       },
     ]);
     // RoomHomepage config, isnt started so others can join to play
+    if (password.length > 0) {
+      room.password = await argon.hash(password);
+    }
     room.has_started = false;
     room.owner = user!.name;
     room.ownerID = user!.userID; // it is used to validate whether user can change room, kick players etc. its uuid
@@ -42,6 +46,19 @@ apiRouter.post("/createRoom/:name", async (req: Request, res: Response) => {
     res.redirect(`/api/room/${savedData.id}`); // Redirects to created room
   }
 });
+
+apiRouter.get(
+  "/joinSecuredRoom/:roomID",
+  async (req: Request, res: Response) => {
+    const { roomID } = req.params;
+    // const { user } = req.session
+    const room = await connection.manager.findOne(Room, {
+      id: Number(roomID),
+    });
+    console.log(room?.password);
+    res.send("hehe");
+  }
+);
 
 apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
   const { user } = req.session;
@@ -54,6 +71,10 @@ apiRouter.post("/joinRoom/:roomID", async (req: Request, res: Response) => {
   const room = await connection.manager.findOne(Room, {
     id: Number(roomID),
   });
+  if (room?.password) {
+    res.redirect(`/api/joinSecuredRoom/${roomID}`);
+    return;
+  }
 
   if (!room) res.json("No room");
   // If room is not found return some error message
@@ -186,6 +207,7 @@ apiRouter.get("/getRoomList", async (req: Request, res: Response) => {
     );
     return {
       id: room.id,
+      secured: typeof room.password === "string",
       data: names,
       has_started: room.has_started,
       room_name: room.room_name,

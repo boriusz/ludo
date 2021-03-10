@@ -33,7 +33,7 @@ app.use(
   })
 );
 
-app.use(bodyParser({ extended: true }));
+app.use(bodyParser.json());
 
 app.use("/", appRouter);
 app.use("/api", apiRouter);

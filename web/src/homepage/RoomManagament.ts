@@ -1,5 +1,5 @@
 import { RoomInterface } from "../types";
-import RoomHomepage from "./RoomHomepage.js";
+import RoomRender from "./RoomRender.js";
 
 const roomContainer = document.querySelector("#room-container")!;
 
@@ -9,7 +9,7 @@ export default class RoomManagament {
   public static drawRoomList(roomList: RoomInterface[]) {
     roomContainer.innerHTML = "";
     roomList.forEach((room: RoomInterface) => {
-      const newRoom = new RoomHomepage(room);
+      const newRoom = new RoomRender(room);
       roomContainer.appendChild(newRoom.getHTMLElement());
     });
   }
@@ -25,19 +25,23 @@ export default class RoomManagament {
   }
 
   public static async createNewRoom() {
-    const inputElementValue = document.querySelector<HTMLInputElement>(
-      "#room-name"
-    )?.value;
+    const roomNameValue = document.querySelector<HTMLInputElement>("#room-name")
+      ?.value;
+    const roomPasswordValue = document.querySelector<HTMLInputElement>(
+      "#room-password"
+    )!.value;
     let roomName;
-    inputElementValue
-      ? (roomName = inputElementValue)
-      : (roomName = "new room");
-    const address = `${
-      RoomManagament.serverAddress
-    }createRoom/${encodeURIComponent(roomName)}`;
+    roomNameValue ? (roomName = roomNameValue) : (roomName = "new room");
+    const address = `${RoomManagament.serverAddress}/createRoom`;
+    const data = JSON.stringify({
+      name: roomName,
+      password: roomPasswordValue,
+    });
     const response = await fetch(address, {
+      headers: { "Content-Type": "application/json" },
       method: "POST",
       redirect: "follow",
+      body: data,
     });
     if (response.redirected) {
       window.location.href = response.url;

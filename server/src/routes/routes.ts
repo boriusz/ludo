@@ -12,7 +12,7 @@ appRouter.get("/", (req: Request, res: Response) => {
     if (req.session.user!.inGame) {
       res.redirect(`/api/room/${req.session.user!.gameID}`); // User is already in game -> redirect to game
     } else {
-      res.sendFile(path.join(__dirname, "../", "public", "index.html")); // Redirect to room list
+      res.sendFile(path.join(__dirname, "../", "public", "homepage.html")); // Redirect to room list
     }
   }
 });

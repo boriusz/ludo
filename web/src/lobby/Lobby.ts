@@ -19,18 +19,24 @@ export default class Lobby {
     temporaryList.id = "participants-container";
     const parsedData = JSON.parse(this.data);
     parsedData.forEach(async (participant: GameData) => {
-      const child = document.createElement("li");
-      participant.state === 1
-        ? (child.style.background = "green")
-        : (child.style.background = "red");
-      child.className = "user";
-      child.innerText = decodeURIComponent(participant.name);
-      const colorMarker = document.createElement("div");
-      colorMarker.className = "color-marker";
-      colorMarker.innerText = participant.color;
-      colorMarker.style.background = participant.color;
-      child.appendChild(colorMarker);
-      temporaryList.appendChild(child);
+      const listElement = document.createElement("li");
+
+      if (participant.state === 0) {
+        listElement.style.border = "3px solid red";
+        listElement.innerText = `${decodeURIComponent(
+          participant.name
+        )} (not ready)`;
+      } else {
+        listElement.style.border = "3px solid green";
+        listElement.innerText = `${decodeURIComponent(
+          participant.name
+        )} (ready)`;
+      }
+
+      listElement.className = "user";
+      listElement.style.background = participant.color;
+
+      temporaryList.appendChild(listElement);
     });
     lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);
 

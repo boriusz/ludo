@@ -26,6 +26,9 @@ export class Room {
   @Column()
   ownerID: string;
 
+  @Column({ nullable: true, type: "text" })
+  password: string | null;
+
   @Column({ nullable: true, type: "timestamp" })
   time_to_begin: Date | null;
 

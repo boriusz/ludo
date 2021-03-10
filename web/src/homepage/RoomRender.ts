@@ -2,17 +2,19 @@ import { RoomInterface } from "../types";
 
 const url = window.location.href;
 
-export default class RoomHomepage {
+export default class RoomRender {
   private readonly id: number;
   private hasStarted: boolean;
   private readonly data: string;
   private readonly roomName: string;
+  private readonly secured: boolean;
 
-  constructor({ id, has_started, data, room_name }: RoomInterface) {
+  constructor({ id, has_started, data, room_name, secured }: RoomInterface) {
     this.id = id;
     this.hasStarted = has_started;
     this.data = data;
     this.roomName = room_name;
+    this.secured = secured;
   }
 
   getHTMLElement(): HTMLElement {
@@ -27,8 +29,8 @@ export default class RoomHomepage {
 
     const participantsList = document.createElement("ul");
     participantsList.className = "participants-container";
-    console.log(this.data);
     const parsedData = JSON.parse(this.data);
+    console.log(this.data);
 
     parsedData.forEach((participant: string) => {
       participantsCounter++;
@@ -71,6 +73,11 @@ export default class RoomHomepage {
       window.location.href = `${url}api/room/${this.id}`;
     });
 
+    const secureIndicator = document.createElement("div"); // TODO: Image of lock
+    this.secured
+      ? (secureIndicator.innerText = "Secured")
+      : (secureIndicator.innerText = "Open");
+
     buttonContainer.appendChild(joinButton);
     buttonContainer.appendChild(watchButton);
 
@@ -78,6 +85,7 @@ export default class RoomHomepage {
     container.appendChild(participantsList);
     container.appendChild(startedMarker);
     container.appendChild(counter);
+    container.appendChild(secureIndicator);
     container.appendChild(buttonContainer);
 
     return container;

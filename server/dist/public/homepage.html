@@ -6,16 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <script src="js/homepage/Homepage.js" type="module" defer></script>
     <title>Ludo</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/homepage.css">
 
   </head>
   <body>
+  <div id="room-modal">
+    <button id="close-modal">X</button>
+      <div id="input-container">
+        <input id="room-name" type="text" placeholder="Room name">
+        <input id="room-password" type="password" placeholder="Room password">
+      </div>
+      <button class="button" id="create-button" type="button">Create</button>
+  </div>
   <header>
     <h1>Ludo</h1>
   </header>
 <section>
-  <input id="room-name" type="text" placeholder="nazwa pokoju">
-  <input id="create-button" type="button" value="stwórz">
+  <button id="button-modal" class="button">+ Create room</button>
   <div>Pokoje:</div>
   <div id="room-container"></div>
 </section>
