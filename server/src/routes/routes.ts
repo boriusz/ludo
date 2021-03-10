@@ -24,12 +24,12 @@ appRouter.post("/setUsername", (req: Request, res: Response) => {
   }
   const { username } = req.body;
   if (username.length > 10) {
-    res.json("too long name"); // Validate username length
+    res.json("too long name");
   } else {
     req.session.user = {
-      name: encodeURIComponent(username), // Encode username, decode only to display it
+      name: encodeURIComponent(username),
       inGame: false,
-      userID: uuidv4(), // Unique id
+      userID: uuidv4(),
     };
     res.redirect("/");
   }

@@ -23,7 +23,7 @@ automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
   for (const room of roomList) {
     const { data } = room;
     const parsedData = JSON.parse(data);
-    if (parsedData.length < 4) {
+    if (parsedData.length < 4 && !room.has_started) {
       user.gameID = room.id;
       user.inGame = true;
 

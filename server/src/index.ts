@@ -4,15 +4,17 @@ import path from "path";
 import appRouter from "./routes/routes";
 import apiRouter from "./routes/api";
 import gameRouter from "./routes/gameRouter";
-import { Room } from "./entity/Room";
 import automaticRouter from "./routes/automatic";
-import { AutomaticRoom } from "./entity/AutomaticRoom";
+import redis from "redis";
+import { cleanDatabase } from "./utils";
 
+const PORT = process.env.PORT || 4000;
+const REDIS_PORT = process.env.PORT || 6379;
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
+export const client = redis.createClient({ port: REDIS_PORT as number });
 
-const PORT = process.env.PORT || 4000;
 const app = express();
 
 declare module "express-session" {
@@ -48,18 +50,6 @@ export let connection: Connection;
 
 const createDbConnection = async () => {
   return await createConnection();
-};
-
-const cleanDatabase = async () => {
-  const rooms: AutomaticRoom[] = await connection.manager.find(AutomaticRoom);
-  for (const room of rooms) {
-    const roomInactiveFor = Date.now() - room.updated_at.getTime();
-    if (roomInactiveFor > 1000 * 60 * 5 && !room.has_started) {
-      await connection.manager.delete(Room, {
-        id: room.id,
-      });
-    }
-  }
 };
 
 const main = async () => {

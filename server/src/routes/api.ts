@@ -56,7 +56,6 @@ const apiRouter = express.Router();
 
 apiRouter.get("/room", async (req: Request, res: Response) => {
   const { user } = req.session;
-  console.log(user);
   if (!user) return;
   if (!user.inGame) {
     res.redirect("/automatic/joinGame");
@@ -72,10 +71,6 @@ apiRouter.get("/room", async (req: Request, res: Response) => {
       user.gameID = null;
     }
     res.redirect("/automatic/joinGame");
-    return;
-  }
-  if (room.has_started) {
-    res.redirect("/game/");
     return;
   }
   res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
@@ -103,6 +98,10 @@ apiRouter.post("/room", async (req: Request, res: Response) => {
     return;
   }
   let parsedData: GameData[] = JSON.parse(room.data);
+  if (parsedData.length === 4) {
+    room.has_started = true;
+    await connection.manager.save(room);
+  }
   let data: any;
   const items = parsedData.map((data1: GameData) => {
     return Object.values(data1)[0];
@@ -158,34 +157,6 @@ apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
   }
 });
 
-// apiRouter.post("/room/:roomID/start", async (req: Request, res: Response) => {
-//   const { user } = req.session;
-//   const { roomID } = req.params;
-//   const room = await connection.manager.findOne(Room, {
-//     id: Number(roomID),
-//   });
-//   if (room && room.ownerID === user?.userID) {
-//     const parsedRoomData: GameData[] = JSON.parse(room.data);
-//     const readyArray = parsedRoomData.map((user: GameData) => {
-//       return Object.values(user)[0].state === 1;
-//     });
-//     if (!readyArray.every((item: boolean) => item)) {
-//       res.json("cant start yet");
-//       return;
-//     } else if (parsedRoomData.length < 2) {
-//       res.json("Need atleast 2 users");
-//       return;
-//     } else {
-//       // Start game here
-//       room.time_to_begin = new Date(Date.now() + TIME_BEFORE_START);
-//       await connection.manager.save(room);
-//       res.json("starting");
-//     }
-//   } else {
-//     res.json("you are not an owner/");
-//   }
-// });
-
 apiRouter.post("/room/ready/:isReady", async (req: Request, res: Response) => {
   const { isReady } = req.params;
   const { user } = req.session;
@@ -205,15 +176,25 @@ apiRouter.post("/room/ready/:isReady", async (req: Request, res: Response) => {
     return;
   }
   const { data } = room;
-  const parsedData = JSON.parse(data);
+  const parsedData: GameData[] = JSON.parse(data);
   const id: string = user.userID;
-  const userInDb = parsedData.find((el: string) => Object.keys(el)[0] === id);
+  const userInDb = parsedData.find((el: GameData) => Object.keys(el)[0] === id);
+  if (!userInDb) {
+    res.json("no user");
+    return;
+  }
   if (userInDb[id]) {
     if (isReady === "true") {
       userInDb[id].state = 1;
     } else {
       userInDb[id].state = 0;
     }
+  }
+  const usersStates = parsedData.map((item: GameData) => {
+    return Object.values(item)[0].state === 1;
+  });
+  if (parsedData.length > 1 && usersStates.every((item: boolean) => item)) {
+    room.has_started = true;
   }
   room.data = JSON.stringify(parsedData);
   await connection.manager.save(room);
