@@ -5,7 +5,7 @@ import appRouter from "./routes/routes";
 import apiRouter from "./routes/api";
 import gameRouter from "./routes/gameRouter";
 import automaticRouter from "./routes/automatic";
-import redis from "redis";
+import Redis from "ioredis";
 import { cleanDatabase } from "./utils";
 
 const PORT = process.env.PORT || 4000;
@@ -13,7 +13,7 @@ const REDIS_PORT = process.env.PORT || 6379;
 const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-export const client = redis.createClient({ port: REDIS_PORT as number });
+export const client = new Redis(Number(REDIS_PORT));
 
 const app = express();
 

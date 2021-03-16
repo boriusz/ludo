@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { connection } from "../index";
 import { AutomaticRoom } from "../entity/AutomaticRoom";
 import { PLAYER_COLORS } from "../constants";
@@ -9,12 +9,22 @@ const express = require("express");
 
 const automaticRouter = express.Router();
 
-automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
+// automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
+export const joinGame = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { user } = req.session;
   if (!user) {
-    res.sendFile(path.join(__dirname, "../", "public", "username.html"));
+    res.redirect("/");
     return;
   }
+  if (user.inGame) {
+    next();
+    return;
+  }
+  // User exists but is not in game
 
   const roomList: AutomaticRoom[] = await connection.manager.find(
     AutomaticRoom
@@ -48,10 +58,10 @@ automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
           color,
         },
       });
+      console.log("user is joining room ", room.id);
       room.data = JSON.stringify(parsedData);
       await connection.manager.save(room);
-
-      res.redirect("/api/room");
+      next();
       return;
     }
   }
@@ -75,7 +85,10 @@ automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
   const savedData = await connection.manager.save(room);
   user!.inGame = true;
   user!.gameID = savedData.id;
-  res.redirect("/api/room/");
-});
+  console.log("user created room ", savedData.id);
+  next();
+  return;
+};
+// });
 
 export default automaticRouter;

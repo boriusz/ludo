@@ -1,23 +1,21 @@
 import { Request, Response } from "express";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
+import fs from "fs/promises";
 
 const express = require("express");
 const appRouter = express.Router();
 
 appRouter.get("/", (req: Request, res: Response) => {
-  if (!req.session?.user?.name) {
+  if (!req.session?.user) {
     res.sendFile(path.join(__dirname, "../", "public", "username.html"));
     return;
+  } else {
+    res.sendFile(path.join(__dirname, "../", "public", "lobby.html"));
   }
-  if (req.session.user!.inGame) {
-    res.redirect("/api/room");
-    return;
-  }
-  res.redirect("/automatic/joinGame");
 });
 
-appRouter.post("/setUsername", (req: Request, res: Response) => {
+appRouter.post("/setUsername", async (req: Request, res: Response) => {
   if (req.session.user) {
     res.redirect("/");
     return;
@@ -31,7 +29,10 @@ appRouter.post("/setUsername", (req: Request, res: Response) => {
       inGame: false,
       userID: uuidv4(),
     };
-    res.redirect("/");
+    const file = await fs.readFile(
+      path.join(__dirname, "../", "public", "lobby.html")
+    );
+    res.send(JSON.stringify(file.toString()));
   }
 });
 

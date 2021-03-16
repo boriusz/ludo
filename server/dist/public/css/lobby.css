@@ -32,6 +32,7 @@ header {
 #participants-container {
     background: rgba(0,0,0, .5);
     display: flex;
+    height: 3rem;
     flex-direction: row;
     line-height: 6rem;
     justify-content: space-around;
@@ -132,6 +133,7 @@ input:checked + .slider:before {
 
 .user {
     display: flex;
+    height: auto;
     align-items: center;
     justify-content: center;
 }

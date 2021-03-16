@@ -3,22 +3,18 @@ import { RoomInterface } from "../types";
 import OptionalRendering from "./OptionalRendering.js";
 
 let lobbyRefreshInterval: number;
-export const currentURL = window.location.href;
-
-const redirectToGame = (url: string) => {
-  window.location.href = url;
-};
 
 const fetchData = async () => {
-  const data = await fetch(currentURL, {
+  const data = await fetch(`api/room`, {
     method: "POST",
     redirect: "follow",
   });
-  if (data.redirected) {
-    redirectToGame(data.url);
-  }
   const parsedData: RoomInterface = await data.json();
+  if (data.redirected) {
+    window.location.href = data.url;
+  }
   if (parsedData.has_started) {
+    console.log("started");
     clearInterval(lobbyRefreshInterval);
     OptionalRendering.prepareLobbyForGame();
   }
@@ -27,7 +23,7 @@ const fetchData = async () => {
 
 let lobby: Lobby;
 
-const updateLobby = async () => {
+export const updateLobby = async () => {
   const data = await fetchData();
   lobby = new Lobby(data);
   lobby.updateHTMLElement();
