@@ -12,7 +12,6 @@ export default class Lobby {
   }
 
   updateHTMLElement(): void {
-    console.log(this);
     const temporaryList = document.createElement("ul");
     temporaryList.id = "participants-container";
     const parsedData = JSON.parse(this.data);

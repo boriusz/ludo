@@ -10,18 +10,34 @@ const fetchData = async () => {
     redirect: "follow",
   });
   const parsedData: RoomInterface = await data.json();
+  console.log(parsedData);
   if (data.redirected) {
     window.location.href = data.url;
   }
   if (parsedData.has_started) {
-    console.log("started");
     clearInterval(lobbyRefreshInterval);
     OptionalRendering.prepareLobbyForGame();
+    window.setInterval(() => updateGame(), 1000);
   }
   return parsedData;
 };
 
+const fetchGameData = async () => {
+  console.log("there");
+  const data = await fetch(`game/data`, {
+    method: "POST",
+    redirect: "follow",
+  });
+  const parsedData = await data.json();
+  console.log(JSON.parse(parsedData));
+  return parsedData;
+};
+
 let lobby: Lobby;
+
+export const updateGame = async () => {
+  await fetchGameData();
+};
 
 export const updateLobby = async () => {
   const data = await fetchData();

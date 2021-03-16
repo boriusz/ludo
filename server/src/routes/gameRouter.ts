@@ -1,20 +1,38 @@
 import { Request, Response } from "express";
-import path from "path";
-import { connection } from "../index";
-import { Room } from "../entity/Room";
+import { client, connection } from "../index";
+import { AutomaticRoom } from "../entity/AutomaticRoom";
 
 const express = require("express");
 const gameRouter = express.Router();
 
-gameRouter.get("/:roomID", async (req: Request, res: Response) => {
-  const room = await connection.manager.findOne(Room, {
-    id: Number(req.params.roomID),
-  });
-  if (!room) {
-    res.redirect("/");
+gameRouter.post("/data", async (req: Request, res: Response) => {
+  const { user } = req.session;
+  if (!user) {
+    res.json("ur not user");
     return;
   }
-  res.sendFile(path.join(__dirname, "../", "public", "game.html"));
+  const { gameId } = user;
+  if (!gameId) {
+    res.json("something wrong");
+    return;
+  }
+  if (await client.get(gameId.toString())) {
+    const data = await client.get(gameId.toString());
+    res.json(data);
+    return;
+  } else {
+    const room = await connection.manager.findOne(AutomaticRoom, {
+      id: Number(gameId),
+    });
+    if (!room) {
+      res.redirect("/");
+      return;
+    }
+    await client.set(gameId.toString(), room.data);
+    const data = await client.get(gameId.toString());
+    res.json(data);
+    return;
+  }
 });
 
 export default gameRouter;

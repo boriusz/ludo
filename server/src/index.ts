@@ -23,7 +23,7 @@ declare module "express-session" {
       name: string;
       inGame: boolean;
       userID: string;
-      gameID?: number | null;
+      gameId: number | null;
     };
   }
 }

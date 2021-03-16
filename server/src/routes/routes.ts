@@ -28,6 +28,7 @@ appRouter.post("/setUsername", async (req: Request, res: Response) => {
       name: encodeURIComponent(username),
       inGame: false,
       userID: uuidv4(),
+      gameId: null,
     };
     const file = await fs.readFile(
       path.join(__dirname, "../", "public", "lobby.html")
