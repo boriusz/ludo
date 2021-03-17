@@ -25,6 +25,10 @@ apiRouter.post("/room", async (req: Request, res: Response) => {
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
   });
+  if (!room) {
+    res.json("hang this request for a sec");
+    return;
+  }
   let playersData: UserGameData[] = JSON.parse(room!.data).players;
   if (playersData.length === 4) {
     room!.has_started = true;

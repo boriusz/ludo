@@ -3,9 +3,7 @@ import { client } from "./index";
 const waitForGameDataChange = async (gameId: number) => {
   await new Promise((resolve) => {
     let interval = setInterval(async () => {
-      // console.log(await checkIfChanged(gameId));
       if (await checkIfChanged(gameId)) {
-        console.log(await checkIfChanged(gameId));
         clearInterval(interval);
         resolve(true);
       } else {

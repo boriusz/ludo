@@ -1,6 +1,7 @@
 import Lobby from "./Lobby.js";
-import { RoomInterface } from "../types";
 import OptionalRendering from "./OptionalRendering.js";
+import Board from "./Board.js";
+import { GameData } from "../types";
 
 let lobbyRefreshInterval: number;
 
@@ -9,7 +10,7 @@ const fetchData = async () => {
     method: "POST",
     redirect: "follow",
   });
-  const parsedData: RoomInterface = await data.json();
+  const parsedData = await data.json();
   if (data.redirected) {
     window.location.href = data.url;
   }
@@ -37,8 +38,9 @@ const fetchGameData = async () => {
 let lobby: Lobby;
 
 export const updateGame = async () => {
-  const data = await fetchGameData();
-  console.log(data);
+  const data: GameData = await fetchGameData();
+  const board = new Board(data);
+  board.render();
 };
 
 export const updateLobby = async () => {

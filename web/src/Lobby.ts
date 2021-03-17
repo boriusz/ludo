@@ -1,4 +1,4 @@
-import { GameData, RoomInterface } from "../types";
+// import { GameData } from "../types";
 
 const lobbyContainer = document.querySelector("#lobby-container")!;
 
@@ -6,7 +6,7 @@ export default class Lobby {
   private hasStarted: boolean;
   private readonly data: string;
 
-  constructor({ has_started, data }: RoomInterface) {
+  constructor({ has_started, data }: { has_started: boolean; data: string }) {
     this.hasStarted = has_started;
     this.data = data;
   }
@@ -15,7 +15,7 @@ export default class Lobby {
     const temporaryList = document.createElement("ul");
     temporaryList.id = "participants-container";
     const parsedData = JSON.parse(this.data);
-    parsedData.forEach(async (participant: GameData) => {
+    parsedData.forEach(async (participant: any) => {
       const listElement = document.createElement("li");
 
       if (!this.hasStarted) {

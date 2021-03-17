@@ -48,7 +48,6 @@ gameRouter.get("/data", async (req: Request, res: Response) => {
     // data already chached
     await waitForGameDataChange(gameId);
     gameData = await client.get(gameId.toString());
-    console.log(gameData);
     res.json(JSON.parse(gameData!));
     return;
   }
