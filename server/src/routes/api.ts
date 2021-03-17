@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { connection } from "../index";
-import { GameData } from "../types";
+import { GameData, UserGameData } from "../types";
 import { AutomaticRoom } from "../entity/AutomaticRoom";
-import { joinGame } from "../utils";
+import { joinGame } from "../joinGame";
 
 const express = require("express");
 
@@ -15,27 +15,30 @@ apiRouter.post("/room", async (req: Request, res: Response) => {
   }
 
   if (!user.inGame) {
-    console.log(user);
     await joinGame(req, res);
+  }
+  if (!user.inGame) {
+    console.log(user);
   }
 
   const roomID = user!.gameId!;
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
   });
-  let parsedData: GameData[] = JSON.parse(room!.data);
-  if (parsedData.length === 4) {
+  let playersData: UserGameData[] = JSON.parse(room!.data).players;
+  if (playersData.length === 4) {
     room!.has_started = true;
     await connection.manager.save(room);
   }
   let data: any;
-  const items = parsedData.map((data1: GameData) => {
-    return Object.values(data1)[0];
+  const items = playersData.map((data1: UserGameData) => {
+    return { key: Object.keys(data1)[0], values: Object.values(data1)[0] };
   });
   const { id, has_started } = room!;
   data = JSON.stringify(
     items.map((element) => {
-      const { name, state, color } = element;
+      const color = element.key;
+      const { name, state } = element.values;
       return { name, state, color };
     })
   );
@@ -65,7 +68,7 @@ apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
   let { data } = room;
   let parsedData: GameData[] = JSON.parse(data);
   parsedData = parsedData.filter((element: GameData) => {
-    if (Object.keys(element)[0] !== user.userID) {
+    if (Object.keys(element)[0] !== user.userId) {
       return element;
     }
     return;
@@ -103,26 +106,28 @@ apiRouter.post("/room/ready/:isReady", async (req: Request, res: Response) => {
     return;
   }
   const { data } = room;
-  const parsedData: GameData[] = JSON.parse(data);
-  const id: string = user.userID;
-  const userInDb = parsedData.find((el: GameData) => Object.keys(el)[0] === id);
+  const playersData: UserGameData[] = JSON.parse(data).players;
+  const id: string = user.userId;
+  const userInDb = playersData.find(
+    (el: UserGameData) => Object.values(el)[0].userId === id
+  );
   if (!userInDb) {
     res.json("no user");
     return;
   }
-  if (userInDb[id]) {
-    if (isReady === "true") {
-      userInDb[id].state = 1;
-    } else {
-      userInDb[id].state = 0;
-    }
+  if (isReady === "true") {
+    Object.values(userInDb)[0].state = 1;
+  } else {
+    Object.values(userInDb)[0].state = 0;
   }
-  const usersStates = parsedData.map((item: GameData) => {
+  const usersStates = playersData.map((item: UserGameData) => {
     return Object.values(item)[0].state === 1;
   });
-  if (parsedData.length > 1 && usersStates.every((item: boolean) => item)) {
+  if (playersData.length > 1 && usersStates.every((item: boolean) => item)) {
     room.has_started = true;
   }
+  const parsedData: GameData = JSON.parse(data);
+  parsedData.players = playersData;
   room.data = JSON.stringify(parsedData);
   await connection.manager.save(room);
   res.json("ok");

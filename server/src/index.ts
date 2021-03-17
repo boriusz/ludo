@@ -4,9 +4,8 @@ import path from "path";
 import appRouter from "./routes/routes";
 import apiRouter from "./routes/api";
 import gameRouter from "./routes/gameRouter";
-import automaticRouter from "./routes/automatic";
 import Redis from "ioredis";
-import { cleanDatabase } from "./utils";
+import { cleanDatabase, clearDatabase } from "./utils";
 
 const PORT = process.env.PORT || 4000;
 const REDIS_PORT = process.env.PORT || 6379;
@@ -22,7 +21,7 @@ declare module "express-session" {
     user: {
       name: string;
       inGame: boolean;
-      userID: string;
+      userId: string;
       gameId: number | null;
     };
   }
@@ -42,7 +41,6 @@ app.use(bodyParser.json());
 app.use("/", appRouter);
 app.use("/api", apiRouter);
 app.use("/game", gameRouter);
-app.use("/automatic", automaticRouter);
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -53,7 +51,8 @@ const createDbConnection = async () => {
 };
 
 const main = async () => {
-  await cleanDatabase();
+  await client.flushall();
+  await clearDatabase();
   setInterval(() => cleanDatabase(), 1000 * 30); // check for inactive rooms every 30s
   app.listen(PORT);
 };

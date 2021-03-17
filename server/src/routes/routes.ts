@@ -27,7 +27,7 @@ appRouter.post("/setUsername", async (req: Request, res: Response) => {
     req.session.user = {
       name: encodeURIComponent(username),
       inGame: false,
-      userID: uuidv4(),
+      userId: uuidv4(),
       gameId: null,
     };
     const file = await fs.readFile(

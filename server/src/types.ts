@@ -1,8 +1,12 @@
-export interface GameData {
-  [id: string]: {
+export interface UserGameData {
+  [color: string]: {
     name: string;
-    color: string;
+    userId: string;
     state: number;
     position: string;
   };
+}
+export interface GameData {
+  players: UserGameData[];
+  hasChanged?: boolean | null;
 }
