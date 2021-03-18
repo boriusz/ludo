@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs/promises";
+import { joinGame } from "../joinGame";
 
 const express = require("express");
 const appRouter = express.Router();
@@ -30,6 +31,7 @@ appRouter.post("/setUsername", async (req: Request, res: Response) => {
       userId: uuidv4(),
       gameId: null,
     };
+    await joinGame(req, res);
     const file = await fs.readFile(
       path.join(__dirname, "../", "public", "lobby.html")
     );

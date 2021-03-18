@@ -1,4 +1,4 @@
-// import { GameData } from "../types";
+import { ColorType } from "../types";
 
 const lobbyContainer = document.querySelector("#lobby-container")!;
 
@@ -15,6 +15,15 @@ export default class Lobby {
     const temporaryList = document.createElement("ul");
     temporaryList.id = "participants-container";
     const parsedData = JSON.parse(this.data);
+    const colorsValues = {
+      red: 4,
+      blue: 3,
+      green: 2,
+      yellow: 1,
+    };
+    parsedData.sort((a: { color: ColorType }, b: { color: ColorType }) => {
+      return colorsValues[b.color] - colorsValues[a.color];
+    });
     parsedData.forEach(async (participant: any) => {
       const listElement = document.createElement("li");
 

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { connection } from "../index";
 import { GameData, UserGameData } from "../types";
 import { AutomaticRoom } from "../entity/AutomaticRoom";
-import { joinGame } from "../joinGame";
 
 const express = require("express");
 
@@ -14,19 +13,11 @@ apiRouter.post("/room", async (req: Request, res: Response) => {
     return;
   }
 
-  if (!user.inGame) {
-    await joinGame(req, res);
-  }
-  if (!user.inGame) {
-    console.log(user);
-  }
-
   const roomID = user!.gameId!;
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
   });
   if (!room) {
-    res.json("hang this request for a sec");
     return;
   }
   let playersData: UserGameData[] = JSON.parse(room!.data).players;

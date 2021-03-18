@@ -36,10 +36,16 @@ const fetchGameData = async () => {
 };
 
 let lobby: Lobby;
+let board: Board;
 
 export const updateGame = async () => {
   const data: GameData = await fetchGameData();
-  const board = new Board(data);
+  if (!board) {
+    board = new Board(data);
+    board.render();
+    return;
+  }
+  board.playersPositions = data;
   board.render();
 };
 

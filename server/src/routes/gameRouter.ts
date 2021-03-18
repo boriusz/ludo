@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { client, connection } from "../index";
 import { AutomaticRoom } from "../entity/AutomaticRoom";
 import waitForGameDataChange from "../waitForGameDataChange";
-import { GameData } from "../types";
+import { GameData, UserGameData } from "../types";
 
 const express = require("express");
 const gameRouter = express.Router();
@@ -20,30 +20,6 @@ gameRouter.get("/data", async (req: Request, res: Response) => {
   }
   let gameData = await client.get(gameId.toString());
 
-  /*
-  jezeli tura jest naszego usera zwracamy odrazu zeby pokazac mu kostke, i na kliencie nie mam zadnych
-  zakolejkowanych requestow ani nic, wszystko wylaczam, i czekam sobie na ruch kostka, wtedy dalej nic nie mam
-  czekam na klikniecie piona dopiero potem ruszam piona i wszystkim userom wysylam ten sam response z danymi
-  do renderu. calosc interakcji odpywa sie po middleware
-  generalnie wysylam info ze jego tura z danymi pozycji jego pionow do renderu ich na ekranie ktore maja
-  listenery na odpowiednie akcje i po wykonaniu wszystkich akcji tutaj sie dzieje to co nizej
-  rzucam respo ze to jego tura rendery leca, wychodzi kolejne zapytanie o zmiane danych, ktore jest wstrzymywane jak
-  reszta.
-
-  jezeli nie to wstrzymujemy do momentu kiedy plansza sie nie zmieni - zapuszczamy co x sekund sprawdzenie do redisa czy cos
-  sie zmienilo, jakas zmienna co przechowuje state, jezeli sie zmienilo promise resolve, pobieramy dane i wysylamy
-
-  na piony mamy listenera, ktory po kliku wysyla jego jakies id, na podstawie tego z przechowywanego wyniku
-  rzutu kostki zmieniamy pozycje, zapisujemy pozycje do redisa, potem dajemy ze sb cos zmienilo i wtedy reszta dostaje
-  zmienione dane
-
-  handle nastepnej tury
-
-
-
-
-   */
-
   if (gameData) {
     // data already chached
     await waitForGameDataChange(gameId);
@@ -60,10 +36,36 @@ gameRouter.get("/data", async (req: Request, res: Response) => {
   }
   const parsedData: GameData = JSON.parse(room.data);
   parsedData.hasChanged = true;
+  parsedData.currentTurn = "red";
   room.data = JSON.stringify(parsedData);
   await connection.manager.save(room);
   await client.set(gameId.toString(), room.data);
   res.json(parsedData);
+  return;
+});
+
+gameRouter.post("/rollDice", async (req: Request, res: Response) => {
+  const { user } = req.session;
+  if (!user || !user.inGame || !user.gameId) {
+    return;
+  }
+  let roomData = await client.get(user.gameId.toString());
+  if (!roomData) {
+    console.log("dymy takie że chuj że tego pokoju w redisie nie ma");
+    return;
+  }
+  const parsedRoomData: GameData = JSON.parse(roomData);
+  const player = parsedRoomData.players.find((player: UserGameData) => {
+    const userId = Object.values(player)[0].userId;
+    return user.userId === userId;
+  });
+  console.log(player);
+  console.log(parsedRoomData);
+  if (Object.keys(player!)[0] === parsedRoomData.currentTurn) {
+    res.json("its your turn");
+    return;
+  }
+  res.json("its not your turn");
   return;
 });
 

@@ -10,3 +10,5 @@ export interface GameData {
   players: UserGameData[];
   hasChanged?: boolean | null;
 }
+
+export type ColorType = "red" | "blue" | "green" | "yellow";

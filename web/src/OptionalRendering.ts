@@ -9,9 +9,13 @@ export default class OptionalRendering {
     canvasElement.height = 640;
     canvasElement.width = 640;
 
+    const gameWrapper = document.createElement("div");
+    gameWrapper.className = "game-wrapper";
+    gameWrapper.appendChild(canvasElement);
+
     readyButton.style.display = "none";
     readyDescription.style.display = "none";
     switcher.style.display = "none";
-    document.body.appendChild(canvasElement);
+    document.body.appendChild(gameWrapper);
   }
 }

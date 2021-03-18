@@ -11,7 +11,6 @@ export const joinGame = async (req: Request, res: Response) => {
     res.redirect("/");
     return;
   }
-  console.log(user);
   // User exists but is not in game
 
   const roomList: AutomaticRoom[] = await connection.manager.find(
@@ -28,6 +27,9 @@ export const joinGame = async (req: Request, res: Response) => {
         }
       );
       if (isUserAlreadyInRoom) {
+        console.log("ir noom");
+        user.inGame = true;
+        user.gameId = room.id;
         return;
       }
 
@@ -47,7 +49,7 @@ export const joinGame = async (req: Request, res: Response) => {
         [color]: {
           name: user.name,
           state: 0,
-          position: "",
+          position: [0, 0, 0, 0],
           userId: user.userId,
         },
       });
@@ -65,14 +67,14 @@ export const joinGame = async (req: Request, res: Response) => {
   const room = new AutomaticRoom();
   room.has_started = false;
   const id: string = user!.userId;
-  const color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
+  // const color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
   const data = {
     players: [
       {
-        [color]: {
+        ["red"]: {
           name: user.name,
           state: 0,
-          position: "",
+          position: [0, 0, 0, 0],
           userId: id,
         },
       },
