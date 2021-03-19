@@ -1,72 +1,64 @@
-import { Request, Response } from "express";
-import { client, connection } from "../index";
-import { AutomaticRoom } from "../entity/AutomaticRoom";
+import express, { Request, Response } from "express";
+import { client } from "../index";
 import waitForGameDataChange from "../waitForGameDataChange";
-import { GameData, UserGameData } from "../types";
+import cacheRoomData from "../cacheRoomData";
+import handleTurn, { isPlayersTurn } from "../turnHandler";
 
-const express = require("express");
 const gameRouter = express.Router();
 
 gameRouter.get("/data", async (req: Request, res: Response) => {
   const { user } = req.session;
-  if (!user) {
+  if (!user || !user.gameId) {
     res.redirect("/");
     return;
   }
   const { gameId } = user;
-  if (!gameId) {
-    res.redirect("/");
-    return;
-  }
   let gameData = await client.get(gameId.toString());
-
-  if (gameData) {
-    // data already chached
-    await waitForGameDataChange(gameId);
+  if (!gameData) {
+    await cacheRoomData(gameId);
     gameData = await client.get(gameId.toString());
-    res.json(JSON.parse(gameData!));
+  }
+  if (gameData) {
+    const parsedGameData = JSON.parse(gameData);
+    if (await isPlayersTurn(user)) {
+      const moveType = await handleTurn(user, parsedGameData);
+      await waitForGameDataChange(gameId);
+      res.json({ parsedGameData, moveType });
+      return;
+    }
+    await waitForGameDataChange(gameId);
+    res.json(parsedGameData);
     return;
   }
-  const room = await connection.manager.findOne(AutomaticRoom, {
-    id: Number(gameId),
-  });
-  if (!room) {
-    res.redirect("/");
-    return;
-  }
-  const parsedData: GameData = JSON.parse(room.data);
-  parsedData.hasChanged = true;
-  parsedData.currentTurn = "red";
-  room.data = JSON.stringify(parsedData);
-  await connection.manager.save(room);
-  await client.set(gameId.toString(), room.data);
-  res.json(parsedData);
-  return;
 });
 
-gameRouter.post("/rollDice", async (req: Request, res: Response) => {
+gameRouter.get("/roll", async (req: Request, res: Response) => {
   const { user } = req.session;
   if (!user || !user.inGame || !user.gameId) {
+    res.redirect("/");
     return;
   }
-  let roomData = await client.get(user.gameId.toString());
-  if (!roomData) {
-    console.log("dymy takie że chuj że tego pokoju w redisie nie ma");
-    return;
+
+  if (await isPlayersTurn(user)) {
+    const { gameId } = user;
+    let room = await client.get(gameId.toString());
+    if (!room) {
+      await cacheRoomData(gameId);
+      room = await client.get(gameId.toString());
+    }
+    if (room) {
+      const parsedRoomData = JSON.parse(room);
+      if (parsedRoomData.turnStatus === 1 && !parsedRoomData.rolledNumber) {
+        parsedRoomData.rolledNumber = Math.floor(Math.random() * 7);
+        await client.set(gameId.toString(), JSON.stringify(parsedRoomData));
+        res.json(parsedRoomData.rolledNumber);
+        return;
+      }
+      res.json("forbidden action");
+      return;
+    }
   }
-  const parsedRoomData: GameData = JSON.parse(roomData);
-  const player = parsedRoomData.players.find((player: UserGameData) => {
-    const userId = Object.values(player)[0].userId;
-    return user.userId === userId;
-  });
-  console.log(player);
-  console.log(parsedRoomData);
-  if (Object.keys(player!)[0] === parsedRoomData.currentTurn) {
-    res.json("its your turn");
-    return;
-  }
-  res.json("its not your turn");
-  return;
+  res.json("not your turn");
 });
 
 export default gameRouter;

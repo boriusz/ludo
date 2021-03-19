@@ -5,13 +5,15 @@ const boardBg = new Image();
 boardBg.src = "../../images/board.png";
 
 export default class Board {
-  private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
-  private _playersPositions: any;
+  private _playersPositions: { [p: string]: number[] }[];
 
   constructor(data: GameData) {
-    this.canvas = document.querySelector("canvas")!;
-    this.context = this.canvas.getContext("2d")!;
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    this.context = context;
     this.context.drawImage(boardBg, 0, 0, 600, 600);
     this._playersPositions = data.players.map((player: UserGameData) => {
       const obj = {
@@ -41,17 +43,17 @@ export default class Board {
     context.stroke();
   }
 
-  public render() {
-    this._playersPositions.forEach((player: any) => {
+  public render(): void {
+    this._playersPositions.forEach((player: { [p: string]: number[] }) => {
       const obj: { color: ColorType; positions: number[] } = {
         color: Object.keys(player)[0] as ColorType,
         positions: player[Object.keys(player)[0]],
       };
-      const positions = getPositions(obj.color, obj.positions)!;
+      const positions = getPositions(obj.color, obj.positions);
       if (!positions) return;
-      for (const position of positions) {
+      for (const position of positions)
         this.drawCircle(position.x, position.y, obj.color);
-      }
+
       // this.context.moveTo();
     });
   }

@@ -1,18 +1,15 @@
-// automaticRouter.get("/joinGame", async (req: Request, res: Response) => {
 import { Request, Response } from "express";
 import { AutomaticRoom } from "./entity/AutomaticRoom";
 import { connection } from "./index";
 import { UserGameData } from "./types";
 import { PLAYER_COLORS } from "./constants";
 
-export const joinGame = async (req: Request, res: Response) => {
+export const joinGame = async (req: Request, res: Response): Promise<void> => {
   const { user } = req.session;
   if (!user) {
     res.redirect("/");
     return;
   }
-  // User exists but is not in game
-
   const roomList: AutomaticRoom[] = await connection.manager.find(
     AutomaticRoom
   );
@@ -20,11 +17,10 @@ export const joinGame = async (req: Request, res: Response) => {
   for (const room of roomList) {
     const { data } = room;
     const playersData: UserGameData[] = JSON.parse(data).players;
-    if (playersData.length < 4 && !room.has_started) {
+    if (playersData.length < 4 && !room.hasStarted) {
       const isUserAlreadyInRoom = playersData.find(
-        (userInGame: UserGameData) => {
-          return Object.values(userInGame)[0].userId === user.userId;
-        }
+        (userInGame: UserGameData) =>
+          Object.values(userInGame)[0].userId === user.userId
       );
       if (isUserAlreadyInRoom) {
         console.log("ir noom");
@@ -42,9 +38,9 @@ export const joinGame = async (req: Request, res: Response) => {
       });
 
       let color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
-      while (unavailableColors.find((el: string) => el === color)) {
+      while (unavailableColors.find((el: string) => el === color))
         color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
-      }
+
       playersData.push({
         [color]: {
           name: user.name,
@@ -65,13 +61,13 @@ export const joinGame = async (req: Request, res: Response) => {
 
   // There is no room to join so create one
   const room = new AutomaticRoom();
-  room.has_started = false;
-  const id: string = user!.userId;
-  // const color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
+  room.hasStarted = false;
+  const id: string = user.userId;
+  const color = PLAYER_COLORS[Math.floor(Math.random() * 4)];
   const data = {
     players: [
       {
-        ["red"]: {
+        [color]: {
           name: user.name,
           state: 0,
           position: [0, 0, 0, 0],
@@ -81,9 +77,10 @@ export const joinGame = async (req: Request, res: Response) => {
     ],
   };
   room.data = JSON.stringify(data);
-  room.has_started = false;
-  const savedData = await connection.manager.save(room);
-  user!.inGame = true;
-  user!.gameId = savedData.id;
+  room.hasStarted = false;
+  user.inGame = true;
+  const newRoom = await connection.manager.save(room);
+  // eslint-disable-next-line require-atomic-updates
+  user.gameId = newRoom.id;
   return;
 };

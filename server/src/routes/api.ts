@@ -1,55 +1,51 @@
-import { Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { connection } from "../index";
 import { GameData, UserGameData } from "../types";
 import { AutomaticRoom } from "../entity/AutomaticRoom";
 
-const express = require("express");
-
 const apiRouter = express.Router();
 
-apiRouter.post("/room", async (req: Request, res: Response) => {
+apiRouter.get("/room", async (req: Request, res: Response) => {
   const { user } = req.session;
-  if (!user) {
-    return;
-  }
+  if (!user || !user.gameId || !user.inGame) return;
 
-  const roomID = user!.gameId!;
+  const roomID = user.gameId;
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
   });
-  if (!room) {
-    return;
-  }
-  let playersData: UserGameData[] = JSON.parse(room!.data).players;
+  if (!room) return;
+
+  const playersData: UserGameData[] = JSON.parse(room.data).players;
   if (playersData.length === 4) {
-    room!.has_started = true;
+    room.hasStarted = true;
     await connection.manager.save(room);
   }
-  let data: any;
-  const items = playersData.map((data1: UserGameData) => {
-    return { key: Object.keys(data1)[0], values: Object.values(data1)[0] };
-  });
-  const { id, has_started } = room!;
-  data = JSON.stringify(
-    items.map((element) => {
-      const color = element.key;
-      const { name, state } = element.values;
-      return { name, state, color };
-    })
+  const items = playersData.map((data1: UserGameData) => ({
+    key: Object.keys(data1)[0],
+    values: Object.values(data1)[0],
+  }));
+  const { id, hasStarted } = room;
+  const data = JSON.stringify(
+    items.map(
+      (element: { key: string; values: { name: string; state: number } }) => {
+        const color = element.key;
+        const { name, state } = element.values;
+        return { name, state, color };
+      }
+    )
   );
-  res.json({ id, data, has_started });
+  res.json({ id, data, hasStarted });
 });
 
 apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
   const { user } = req.session;
-  if (!user) {
+  if (!user || !user.inGame || !user.gameId) {
     res.json("htf did u leave");
     return;
   }
-
-  const roomID = user.gameId!;
-  user!.inGame = false;
-  user!.gameId = null;
+  const roomID = user.gameId;
+  user.inGame = false;
+  user.gameId = null;
 
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
@@ -60,13 +56,11 @@ apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
     return;
   }
 
-  let { data } = room;
+  const { data } = room;
   let parsedData: GameData[] = JSON.parse(data);
   parsedData = parsedData.filter((element: GameData) => {
-    if (Object.keys(element)[0] !== user.userId) {
-      return element;
-    }
-    return;
+    if (Object.keys(element)[0] !== user.userId) return element;
+    return false;
   });
 
   if (parsedData.length === 0) {
@@ -84,15 +78,11 @@ apiRouter.post("/leaveRoom", async (req: Request, res: Response) => {
 apiRouter.post("/room/ready/:isReady", async (req: Request, res: Response) => {
   const { isReady } = req.params;
   const { user } = req.session;
-  if (!user) {
+  if (!user || !user.inGame || !user.gameId) {
     res.json("no user to be ready");
     return;
   }
-  if (!user?.inGame) {
-    res.json("user is not in game");
-    return;
-  }
-  const roomID = user.gameId!;
+  const roomID = user.gameId;
   const room = await connection.manager.findOne(AutomaticRoom, {
     id: roomID,
   });
@@ -110,17 +100,15 @@ apiRouter.post("/room/ready/:isReady", async (req: Request, res: Response) => {
     res.json("no user");
     return;
   }
-  if (isReady === "true") {
-    Object.values(userInDb)[0].state = 1;
-  } else {
-    Object.values(userInDb)[0].state = 0;
-  }
-  const usersStates = playersData.map((item: UserGameData) => {
-    return Object.values(item)[0].state === 1;
-  });
-  if (playersData.length > 1 && usersStates.every((item: boolean) => item)) {
-    room.has_started = true;
-  }
+  if (isReady === "true") Object.values(userInDb)[0].state = 1;
+  else Object.values(userInDb)[0].state = 0;
+
+  const usersStates = playersData.map(
+    (item: UserGameData) => Object.values(item)[0].state === 1
+  );
+  if (playersData.length > 1 && usersStates.every((item: boolean) => item))
+    room.hasStarted = true;
+
   const parsedData: GameData = JSON.parse(data);
   parsedData.players = playersData;
   room.data = JSON.stringify(parsedData);

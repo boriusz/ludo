@@ -3,12 +3,17 @@ export interface UserGameData {
     name: string;
     userId: string;
     state: number;
-    position: string;
+    position: number[];
   };
 }
 export interface GameData {
   players: UserGameData[];
   hasChanged?: boolean | null;
+}
+
+export interface GameDataWithMove {
+  parsedGameData: GameData;
+  moveType: number;
 }
 
 export type ColorType = "red" | "blue" | "green" | "yellow";

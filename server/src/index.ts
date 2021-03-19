@@ -6,12 +6,12 @@ import apiRouter from "./routes/api";
 import gameRouter from "./routes/gameRouter";
 import Redis from "ioredis";
 import { cleanDatabase, clearDatabase } from "./utils";
+import express from "express";
+import session from "express-session";
 
 const PORT = process.env.PORT || 4000;
 const REDIS_PORT = process.env.PORT || 6379;
-const express = require("express");
-const bodyParser = require("body-parser");
-const session = require("express-session");
+
 export const client = new Redis(Number(REDIS_PORT));
 
 const app = express();
@@ -36,7 +36,7 @@ app.use(
   })
 );
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use("/", appRouter);
 app.use("/api", apiRouter);
@@ -46,9 +46,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 export let connection: Connection;
 
-const createDbConnection = async () => {
-  return await createConnection();
-};
+const createDbConnection = async () => await createConnection();
 
 const main = async () => {
   await client.flushall();

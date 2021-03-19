@@ -1,12 +1,13 @@
 import { client } from "./index";
 
-const waitForGameDataChange = async (gameId: number) => {
+const waitForGameDataChange = async (gameId: number): Promise<boolean> => {
+  if (await checkIfChanged(gameId)) setTimeout(() => true, 1000);
+
   await new Promise((resolve) => {
-    let interval = setInterval(async () => {
+    const interval = setInterval(async () => {
       if (await checkIfChanged(gameId)) {
         clearInterval(interval);
         resolve(true);
-      } else {
       }
     }, 3000);
   });
@@ -15,9 +16,7 @@ const waitForGameDataChange = async (gameId: number) => {
 
 const checkIfChanged = async (gameId: number) => {
   const gameData = await client.get(gameId.toString());
-  if (!gameData) {
-    return false;
-  }
+  if (!gameData) return false;
   const parsedGameData = JSON.parse(gameData);
   return parsedGameData?.hasChanged;
 };

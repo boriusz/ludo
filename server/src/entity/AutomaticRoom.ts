@@ -15,11 +15,11 @@ export class AutomaticRoom {
   data: string;
 
   @Column()
-  has_started: boolean;
+  hasStarted: boolean;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updated_at: Date;
+  updatedAt: Date;
 }
