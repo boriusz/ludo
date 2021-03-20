@@ -13,3 +13,4 @@ export interface GameData {
   turnStatus?: 1 | 2 | null; // 1- waiting for diceroll/ 2- waiting for pionek choose
   rolledNumber?: 1 | 2 | 3 | 4 | 5 | 6 | null;
 }
+export type ColorType = "red" | "blue" | "green" | "yellow";

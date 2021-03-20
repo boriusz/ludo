@@ -7,8 +7,11 @@ boardBg.src = "../../images/board.png";
 export default class Board {
   private context: CanvasRenderingContext2D;
   private _playersPositions: { [p: string]: number[] }[];
+  private gameWrapper: HTMLElement | null;
+  private isTurnViewRendered = false;
 
   constructor(data: GameData) {
+    this.gameWrapper = document.querySelector(".game-wrapper");
     const canvas = document.querySelector("canvas");
     if (!canvas) return;
     const context = canvas.getContext("2d");
@@ -44,6 +47,8 @@ export default class Board {
   }
 
   public render(): void {
+    this.context.clearRect(0, 0, 600, 600);
+    this.context.drawImage(boardBg, 0, 0, 600, 600);
     this._playersPositions.forEach((player: { [p: string]: number[] }) => {
       const obj: { color: ColorType; positions: number[] } = {
         color: Object.keys(player)[0] as ColorType,
@@ -56,5 +61,31 @@ export default class Board {
 
       // this.context.moveTo();
     });
+  }
+
+  public renderTurnView(currentTurn: ColorType, rolledNumber: number): void {
+    if (this.isTurnViewRendered) return;
+    const currentPlayersPositions = this._playersPositions.find(
+      (position: { [p: string]: number[] }) =>
+        Object.keys(position)[0] === currentTurn
+    );
+    if (
+      (rolledNumber === 1 || rolledNumber === 6) &&
+      currentPlayersPositions?.[currentTurn]
+    ) {
+      const positions = getPositions(
+        currentTurn,
+        currentPlayersPositions[currentTurn]
+      );
+      positions?.forEach((position: { x: number; y: number }) => {
+        const pawn = document.createElement("div");
+        pawn.className = "pawn";
+        pawn.style.top = (position.y - 15).toString() + "px";
+        pawn.style.left = (position.x - 15).toString() + "px";
+        console.log(pawn.style.top, pawn.style.left);
+        this.gameWrapper?.appendChild(pawn);
+      });
+    }
+    this.isTurnViewRendered = true;
   }
 }

@@ -8,12 +8,10 @@ export interface UserGameData {
 }
 export interface GameData {
   players: UserGameData[];
+  currentTurn: ColorType;
+  turnStatus: number;
+  rolledNumber: number;
   hasChanged?: boolean | null;
-}
-
-export interface GameDataWithMove {
-  parsedGameData: GameData;
-  moveType: number;
 }
 
 export type ColorType = "red" | "blue" | "green" | "yellow";

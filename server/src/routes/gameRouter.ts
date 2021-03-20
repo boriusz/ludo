@@ -2,7 +2,11 @@ import express, { Request, Response } from "express";
 import { client } from "../index";
 import waitForGameDataChange from "../waitForGameDataChange";
 import cacheRoomData from "../cacheRoomData";
-import handleTurn, { isPlayersTurn } from "../turnHandler";
+import handleTurn, {
+  isPlayersTurn,
+  passTurnToNextPlayer,
+} from "../turnHandler";
+import { GameData, UserGameData } from "../types";
 
 const gameRouter = express.Router();
 
@@ -19,15 +23,16 @@ gameRouter.get("/data", async (req: Request, res: Response) => {
     gameData = await client.get(gameId.toString());
   }
   if (gameData) {
-    const parsedGameData = JSON.parse(gameData);
+    const parsedGameData: GameData = JSON.parse(gameData);
     if (await isPlayersTurn(user)) {
-      const moveType = await handleTurn(user, parsedGameData);
+      await handleTurn(user, parsedGameData);
       await waitForGameDataChange(gameId);
-      res.json({ parsedGameData, moveType });
+      res.json(parsedGameData);
       return;
     }
     await waitForGameDataChange(gameId);
-    res.json(parsedGameData);
+    const { players, currentTurn } = parsedGameData;
+    res.json({ players, currentTurn });
     return;
   }
 });
@@ -49,12 +54,27 @@ gameRouter.get("/roll", async (req: Request, res: Response) => {
     if (room) {
       const parsedRoomData = JSON.parse(room);
       if (parsedRoomData.turnStatus === 1 && !parsedRoomData.rolledNumber) {
-        parsedRoomData.rolledNumber = Math.floor(Math.random() * 7);
+        parsedRoomData.rolledNumber = Math.floor(Math.random() * 6) + 1;
+        const currentPlayer: UserGameData = parsedRoomData.players.find(
+          (player: UserGameData) =>
+            Object.values(player)[0].userId === user.userId
+        );
+        const currentPlayerPositions = Object.values(currentPlayer)[0].position;
+        if (
+          currentPlayerPositions.every((item: number) => item === 0) &&
+          parsedRoomData.rolledNumber !== 1 &&
+          parsedRoomData.rolledNumber !== 6
+        ) {
+          await passTurnToNextPlayer(gameId);
+          res.json(parsedRoomData.rolledNumber);
+          return;
+        }
+        parsedRoomData.turnStatus = 2;
         await client.set(gameId.toString(), JSON.stringify(parsedRoomData));
         res.json(parsedRoomData.rolledNumber);
         return;
       }
-      res.json("forbidden action");
+      res.json(parsedRoomData.rolledNumber);
       return;
     }
   }

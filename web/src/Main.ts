@@ -1,12 +1,12 @@
 import Lobby from "./Lobby.js";
 import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";
-import { GameData, GameDataWithMove } from "../types";
+import { GameData } from "../types";
 import Dice from "./Dice.js";
 
 let lobbyRefreshInterval: number;
 
-const fetchData = async () => {
+const fetchLobbyData = async () => {
   const data = await fetch(`api/room`, {
     redirect: "follow",
   });
@@ -15,6 +15,7 @@ const fetchData = async () => {
   if (parsedData.hasStarted) {
     clearInterval(lobbyRefreshInterval);
     OptionalRendering.prepareLobbyForGame();
+    dice = new Dice();
     updateGame();
   }
   return parsedData;
@@ -33,6 +34,7 @@ const fetchGameData = async () => {
 
 let lobby: Lobby;
 let board: Board;
+let dice: Dice;
 
 const updateBoard = (data: GameData) => {
   if (!board) {
@@ -45,19 +47,22 @@ const updateBoard = (data: GameData) => {
 };
 
 export const updateGame = async (): Promise<void> => {
-  const data: GameData | GameDataWithMove = await fetchGameData();
-  const { moveType } = data as GameDataWithMove;
-  if (!moveType) {
+  const data: GameData = await fetchGameData();
+  const { turnStatus } = data;
+  if (!turnStatus) {
     updateBoard(data as GameData);
+    const rollButton = document.querySelector(".roll-button");
+    if (rollButton) rollButton.parentElement?.removeChild(rollButton);
     return;
   }
-  const { parsedGameData } = data as GameDataWithMove;
-  updateBoard(parsedGameData);
-  if (moveType === 1) console.log(await Dice.roll());
+  updateBoard(data);
+  if (turnStatus === 1) dice.renderRollButton();
+  if (turnStatus === 2)
+    board.renderTurnView(data.currentTurn, data.rolledNumber);
 };
 
 export const updateLobby = async (): Promise<void> => {
-  const data = await fetchData();
+  const data = await fetchLobbyData();
   lobby = new Lobby(data);
   lobby.updateHTMLElement();
 };

@@ -1,13 +1,14 @@
 export default class OptionalRendering {
   public static prepareLobbyForGame(): void {
+    if (document.querySelector(".game-wrapper")) return;
     const readyButton = document.querySelector<HTMLElement>("#ready-button");
     const readyDescription = document.querySelector<HTMLElement>(
       "#ready-description"
     );
     const switcher = document.querySelector<HTMLElement>(".switch");
     const canvasElement = document.createElement("canvas");
-    canvasElement.height = 640;
-    canvasElement.width = 640;
+    canvasElement.height = 600;
+    canvasElement.width = 600;
 
     const gameWrapper = document.createElement("div");
     gameWrapper.className = "game-wrapper";
@@ -17,7 +18,7 @@ export default class OptionalRendering {
       readyButton.style.display = "none";
       readyDescription.style.display = "none";
       switcher.style.display = "none";
-      document.body.appendChild(gameWrapper);
+      document.querySelector(".game-container")?.appendChild(gameWrapper);
     }
   }
 }
