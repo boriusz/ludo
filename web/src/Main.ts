@@ -56,7 +56,9 @@ export const updateGame = async (): Promise<void> => {
     return;
   }
   updateBoard(data);
+  Board.removeAllPawns();
   if (turnStatus === 1) dice.renderRollButton();
+
   if (turnStatus === 2)
     board.renderTurnView(data.currentTurn, data.rolledNumber);
 };

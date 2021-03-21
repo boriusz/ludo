@@ -63,29 +63,38 @@ export default class Board {
     });
   }
 
+  public static removeAllPawns(): void {
+    const pawns = document.querySelectorAll(".pawn");
+    pawns.forEach((pawn: Element) => {
+      pawn.remove();
+    });
+  }
+
   public renderTurnView(currentTurn: ColorType, rolledNumber: number): void {
-    if (this.isTurnViewRendered) return;
     const currentPlayersPositions = this._playersPositions.find(
       (position: { [p: string]: number[] }) =>
         Object.keys(position)[0] === currentTurn
     );
-    if (
-      (rolledNumber === 1 || rolledNumber === 6) &&
-      currentPlayersPositions?.[currentTurn]
-    ) {
-      const positions = getPositions(
-        currentTurn,
-        currentPlayersPositions[currentTurn]
-      );
-      positions?.forEach((position: { x: number; y: number }) => {
-        const pawn = document.createElement("div");
-        pawn.className = "pawn";
-        pawn.style.top = (position.y - 15).toString() + "px";
-        pawn.style.left = (position.x - 15).toString() + "px";
-        console.log(pawn.style.top, pawn.style.left);
-        this.gameWrapper?.appendChild(pawn);
+    if (!currentPlayersPositions) return;
+    const positions = getPositions(
+      currentTurn,
+      currentPlayersPositions[currentTurn]
+    );
+    positions?.forEach((position: { x: number; y: number }, index: number) => {
+      const pawn = document.createElement("div");
+      pawn.className = "pawn";
+      pawn.style.top = (position.y - 15).toString() + "px";
+      pawn.style.left = (position.x - 15).toString() + "px";
+      pawn.addEventListener("click", async () => {
+        const body = JSON.stringify({ pawnId: index });
+        const headers = { "Content-Type": "application/json" };
+        await fetch("/game/movePawn", {
+          method: "post",
+          headers,
+          body,
+        });
       });
-    }
-    this.isTurnViewRendered = true;
+      this.gameWrapper?.appendChild(pawn);
+    });
   }
 }

@@ -81,4 +81,48 @@ gameRouter.get("/roll", async (req: Request, res: Response) => {
   res.json("not your turn");
 });
 
+gameRouter.post("/movePawn", async (req: Request, res: Response) => {
+  const { user } = req.session;
+  const { pawnId } = req.body;
+  if (!user) return;
+  const { gameId, inGame } = user;
+  if (gameId && inGame) {
+    if (await isPlayersTurn(user)) {
+      let room = await client.get(gameId.toString());
+      if (!room) {
+        await cacheRoomData(gameId);
+        room = await client.get(gameId.toString());
+      }
+      if (room) {
+        const parsedRoomData: GameData = JSON.parse(room);
+        const { currentTurn, rolledNumber } = parsedRoomData;
+        const { players } = parsedRoomData;
+        const player: UserGameData | undefined = players.find(
+          (player: UserGameData) => Object.keys(player)[0] === currentTurn
+        );
+        if (player && rolledNumber) {
+          const playerData = Object.values(player)[0];
+          const movedPawn: number = playerData.position[pawnId];
+          if (rolledNumber !== 6 && rolledNumber !== 1 && movedPawn === 0) {
+            res.json("cant move this one");
+            return;
+          }
+          if (movedPawn === 0) playerData.position[pawnId] = 1;
+          else playerData.position[pawnId] += rolledNumber;
+
+          Object.values(player)[0] = playerData;
+          parsedRoomData.turnStatus = null;
+          parsedRoomData.rolledNumber = null;
+          await client.set(gameId.toString(), JSON.stringify(parsedRoomData));
+          await passTurnToNextPlayer(gameId);
+          res.json("ok");
+          return;
+        }
+      }
+    }
+  }
+  res.json("not your turn");
+  return;
+});
+
 export default gameRouter;
