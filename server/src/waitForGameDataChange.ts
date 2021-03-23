@@ -7,7 +7,7 @@ const waitForGameDataChange = async (gameId: number): Promise<boolean> => {
         clearInterval(interval);
         resolve(true);
       }
-    }, 1000);
+    }, 500);
   });
   return true;
 };

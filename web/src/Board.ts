@@ -8,7 +8,6 @@ export default class Board {
   private context: CanvasRenderingContext2D;
   private _playersPositions: { [p: string]: number[] }[];
   private gameWrapper: HTMLElement | null;
-  private isTurnViewRendered = false;
 
   constructor(data: GameData) {
     this.gameWrapper = document.querySelector(".game-wrapper");
@@ -27,7 +26,7 @@ export default class Board {
     });
   }
 
-  set playersPositions(data: GameData) {
+  set playersPositions(data: { players: UserGameData[] }) {
     this._playersPositions = data.players.map((player: UserGameData) => {
       const obj = {
         color: Object.keys(player)[0],
@@ -71,30 +70,37 @@ export default class Board {
   }
 
   public renderTurnView(currentTurn: ColorType, rolledNumber: number): void {
-    const currentPlayersPositions = this._playersPositions.find(
+    const currentPlayer = this._playersPositions.find(
       (position: { [p: string]: number[] }) =>
         Object.keys(position)[0] === currentTurn
     );
-    if (!currentPlayersPositions) return;
-    const positions = getPositions(
-      currentTurn,
-      currentPlayersPositions[currentTurn]
-    );
-    positions?.forEach((position: { x: number; y: number }, index: number) => {
-      const pawn = document.createElement("div");
-      pawn.className = "pawn";
-      pawn.style.top = (position.y - 15).toString() + "px";
-      pawn.style.left = (position.x - 15).toString() + "px";
-      pawn.addEventListener("click", async () => {
-        const body = JSON.stringify({ pawnId: index });
-        const headers = { "Content-Type": "application/json" };
-        await fetch("/game/movePawn", {
-          method: "post",
-          headers,
-          body,
+    if (!currentPlayer) return;
+    const positions = getPositions(currentTurn, currentPlayer[currentTurn]);
+    positions?.forEach(
+      (position: { x: number; y: number; isHome?: boolean }, index: number) => {
+        if (rolledNumber !== 1 && rolledNumber !== 6 && position.isHome) return;
+        const pawn = document.createElement("div");
+        pawn.className = "pawn";
+        pawn.style.top = (position.y - 15).toString() + "px";
+        pawn.style.left = (position.x - 15).toString() + "px";
+        setInterval(() => {
+          pawn.style.background =
+            pawn.style.background === "pink"
+              ? (pawn.style.background = "none")
+              : (pawn.style.background = "pink");
+        }, 500);
+        pawn.onmouseover = () => {};
+        pawn.addEventListener("click", async () => {
+          const body = JSON.stringify({ pawnId: index });
+          const headers = { "Content-Type": "application/json" };
+          await fetch("/game/movePawn", {
+            method: "post",
+            headers,
+            body,
+          });
         });
-      });
-      this.gameWrapper?.appendChild(pawn);
-    });
+        this.gameWrapper?.appendChild(pawn);
+      }
+    );
   }
 }

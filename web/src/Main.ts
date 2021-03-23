@@ -33,7 +33,7 @@ const fetchGameData = async () => {
 };
 
 let lobby: Lobby;
-let board: Board;
+export let board: Board;
 let dice: Dice;
 
 const updateBoard = (data: GameData) => {
@@ -49,6 +49,7 @@ const updateBoard = (data: GameData) => {
 export const updateGame = async (): Promise<void> => {
   const data: GameData = await fetchGameData();
   const { turnStatus } = data;
+  Board.removeAllPawns();
   if (!turnStatus) {
     updateBoard(data as GameData);
     const rollButton = document.querySelector(".roll-button");
@@ -56,7 +57,6 @@ export const updateGame = async (): Promise<void> => {
     return;
   }
   updateBoard(data);
-  Board.removeAllPawns();
   if (turnStatus === 1) dice.renderRollButton();
 
   if (turnStatus === 2)

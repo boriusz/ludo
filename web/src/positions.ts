@@ -1,15 +1,15 @@
 import { ColorType } from "../types";
 const getPositions = (color: ColorType, positions: number[]) => {
   if (color === "red") {
-    return positions.map(
-      (position: number, index: number) =>
-        redPos?.[position as keyof typeof redPos][index]
-    );
+    return positions.map((position: number, index: number) => {
+      if (position === 0) return { ...redPos[0][index], isHome: true };
+      return redPos?.[position as keyof typeof redPos][index];
+    });
   }
 
   if (color === "blue") {
     return positions.map((position: number, index: number) => {
-      if (position === 0) return bluePos[0][index];
+      if (position === 0) return { ...bluePos[0][index], isHome: true };
       if (position + 13 > 52)
         return redPos?.[(position - (52 - 13)) as keyof typeof redPos][index];
       return redPos?.[(position + 13) as keyof typeof redPos][index];
@@ -18,7 +18,7 @@ const getPositions = (color: ColorType, positions: number[]) => {
 
   if (color === "green") {
     return positions.map((position: number, index: number) => {
-      if (position === 0) return greenPos[0][index];
+      if (position === 0) return { ...greenPos[0][index], isHome: true };
       if (position + 26 > 52)
         return redPos?.[(position - (52 - 26)) as keyof typeof redPos][index];
       return redPos?.[(position + 26) as keyof typeof redPos][index];
@@ -27,7 +27,7 @@ const getPositions = (color: ColorType, positions: number[]) => {
 
   if (color === "yellow") {
     return positions.map((position: number, index: number) => {
-      if (position === 0) return yellowPos[0][index];
+      if (position === 0) return { ...yellowPos[0][index], isHome: true };
       if (position + 39 > 52)
         return redPos?.[(position - (52 - 39)) as keyof typeof redPos][index];
       return redPos?.[(position + 39) as keyof typeof redPos][index];

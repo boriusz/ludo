@@ -1,3 +1,6 @@
+import { board } from "./Main.js";
+import { UserGameData } from "../types";
+
 export default class Dice {
   private readonly gameWrapper: HTMLElement | null;
   public rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
@@ -7,7 +10,17 @@ export default class Dice {
 
   public async roll(): Promise<void> {
     const response = await fetch("/game/roll");
-    this.rolledNumber = await response.json();
+    const parsedResponse = await response.json();
+    const { rolledNumber } = parsedResponse;
+    const players: UserGameData[] = parsedResponse?.players;
+    const currentTurn = parsedResponse?.currentTurn;
+    if (rolledNumber) this.rolledNumber = rolledNumber;
+    else this.rolledNumber = parsedResponse;
+    if (players) {
+      const data = { players };
+      board.playersPositions = data;
+      board.renderTurnView(currentTurn, rolledNumber);
+    }
   }
 
   public renderRollButton(): void {
