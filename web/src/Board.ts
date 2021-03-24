@@ -67,6 +67,10 @@ export default class Board {
     pawns.forEach((pawn: Element) => {
       pawn.remove();
     });
+    const possibleDivs = document.querySelectorAll(".possible-pawn");
+    if (possibleDivs) {
+      Array.from(possibleDivs).forEach((child: Element) => child.remove());
+    }
   }
 
   public renderTurnView(currentTurn: ColorType, rolledNumber: number): void {
@@ -81,15 +85,39 @@ export default class Board {
         if (rolledNumber !== 1 && rolledNumber !== 6 && position.isHome) return;
         const pawn = document.createElement("div");
         pawn.className = "pawn";
-        pawn.style.top = (position.y - 15).toString() + "px";
-        pawn.style.left = (position.x - 15).toString() + "px";
+        pawn.style.top = (position.y - 20).toString() + "px";
+        pawn.style.left = (position.x - 20).toString() + "px";
         setInterval(() => {
-          pawn.style.background =
-            pawn.style.background === "pink"
-              ? (pawn.style.background = "none")
-              : (pawn.style.background = "pink");
+          pawn.classList.toggle("pawn-blink");
         }, 500);
-        pawn.onmouseover = () => {};
+        pawn.onmouseover = () => {
+          const elapsedPositions = currentPlayer[currentTurn].map(
+            (item: number) => {
+              if (item === 0) return 1;
+              return item + rolledNumber;
+            }
+          );
+          const possibleNextPosition = getPositions(
+            currentTurn,
+            elapsedPositions
+          );
+          const nextPosition = possibleNextPosition?.[index];
+          if (nextPosition) {
+            const possiblePawn = document.createElement("div");
+            possiblePawn.className = "possible-pawn";
+            possiblePawn.style.top = (nextPosition.y - 20).toString() + "px";
+            possiblePawn.style.left = (nextPosition.x - 20).toString() + "px";
+            this.gameWrapper?.appendChild(possiblePawn);
+          }
+        };
+        pawn.onmouseleave = () => {
+          const possibleDivs = document.querySelectorAll(".possible-pawn");
+          if (possibleDivs) {
+            Array.from(possibleDivs).forEach((child: Element) =>
+              child.remove()
+            );
+          }
+        };
         pawn.addEventListener("click", async () => {
           const body = JSON.stringify({ pawnId: index });
           const headers = { "Content-Type": "application/json" };

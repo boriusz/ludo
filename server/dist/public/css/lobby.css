@@ -151,12 +151,25 @@ input:checked + .slider:before {
 
 .pawn {
     position: absolute;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
+    margin: 0;
     display: inline-block;
-    background: pink;
+    background: rgba(255, 169, 169, .5);
 }
 
+.pawn-blink {
+    background: none;
+}
+
+.possible-pawn {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    display: inline-block;
+    background: radial-gradient(blue, red, pink, green, yellow, darkgrey, tomato);
+}
 .game-container {
     display: flex;
     flex-direction: row;

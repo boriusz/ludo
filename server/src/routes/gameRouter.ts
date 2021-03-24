@@ -70,7 +70,6 @@ gameRouter.get("/roll", async (req: Request, res: Response) => {
           return;
         }
         parsedRoomData.turnStatus = 2;
-        parsedRoomData.hasChanged = false;
         await client.set(gameId.toString(), JSON.stringify(parsedRoomData));
         const { rolledNumber, players, currentTurn } = parsedRoomData;
         res.json({ rolledNumber, players, currentTurn });
@@ -115,7 +114,6 @@ gameRouter.post("/movePawn", async (req: Request, res: Response) => {
           Object.values(player)[0] = playerData;
           parsedRoomData.turnStatus = null;
           parsedRoomData.rolledNumber = null;
-          parsedRoomData.hasChanged = true;
           await client.set(gameId.toString(), JSON.stringify(parsedRoomData));
           await passTurnToNextPlayer(gameId);
           res.json("ok");

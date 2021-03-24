@@ -28,7 +28,6 @@ const fetchGameData = async () => {
   if (data.redirected) window.location.href = data.url;
 
   const parsedData = await data.json();
-  updateGame();
   return parsedData;
 };
 
@@ -54,13 +53,16 @@ export const updateGame = async (): Promise<void> => {
     updateBoard(data as GameData);
     const rollButton = document.querySelector(".roll-button");
     if (rollButton) rollButton.parentElement?.removeChild(rollButton);
+    await updateGame();
     return;
   }
   updateBoard(data);
   if (turnStatus === 1) dice.renderRollButton();
 
-  if (turnStatus === 2)
+  if (turnStatus === 2 && !document.querySelector(".pawn"))
     board.renderTurnView(data.currentTurn, data.rolledNumber);
+
+  await updateGame();
 };
 
 export const updateLobby = async (): Promise<void> => {
