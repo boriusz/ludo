@@ -7,7 +7,7 @@ import Dice from "./Dice.js";
 let lobbyRefreshInterval: number;
 
 const fetchLobbyData = async () => {
-  const data = await fetch(`api/room`, {
+  const data = await fetch(`/room`, {
     redirect: "follow",
   });
   const parsedData = await data.json();

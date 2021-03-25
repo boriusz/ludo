@@ -4,7 +4,7 @@ import { GameService } from './game.service';
 import { GameDataRO } from './game.interface';
 
 @Controller('game')
-export class RoomController {
+export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Get()

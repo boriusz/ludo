@@ -1,14 +1,21 @@
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { Cache } from 'cache-manager';
+import { Cache } from 'cache-manager-redis-store';
 import { Repository } from 'typeorm';
-import { RoomEntity } from '../room/room.entity';
-import { Color, colorsValues, GameData, PlayerData } from './game.interface';
-import { RoomPlayersData } from '../room/room.interface';
+import { RoomEntity } from './room/room.entity';
+import {
+  Color,
+  colorsValues,
+  GameData,
+  PlayerData,
+} from './game/game.interface';
+import { RoomPlayersData } from './room/room.interface';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RedisCacheService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectRepository(RoomEntity)
     private readonly roomRepository: Repository<RoomEntity>
   ) {}
 

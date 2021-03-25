@@ -5,7 +5,16 @@ export interface RoomPlayersData {
   color: Color;
 }
 
-type Color = 'red' | 'blue' | 'green' | 'yellow';
+export type Color = 'red' | 'blue' | 'green' | 'yellow';
+
+export const colorsValues = {
+  red: 4,
+  blue: 3,
+  green: 2,
+  yellow: 1,
+};
+
+export const PLAYER_COLORS = ['red', 'blue', 'green', 'yellow'];
 
 export interface RoomRO {
   players: {

@@ -4,13 +4,15 @@ import * as session from 'express-session';
 
 declare module 'express-session' {
   export interface SessionData {
-    user: {
-      name: string;
-      inGame: boolean;
-      userId: string;
-      roomId: number | null;
-    };
+    user: UserSessionData;
   }
+}
+
+export interface UserSessionData {
+  name: string;
+  inGame: boolean;
+  userId: string;
+  roomId: number | null;
 }
 
 async function bootstrap() {

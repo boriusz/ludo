@@ -1,20 +1,20 @@
-import { ColorType } from "../types";
+import { Color, RoomRO } from "../types";
 
 const lobbyContainer = document.querySelector("#lobby-container");
 
 export default class Lobby {
   private readonly hasStarted: boolean;
-  private readonly data: string;
+  private readonly data: { name: string; isReady: boolean; color: Color }[];
 
-  constructor({ hasStarted, data }: { hasStarted: boolean; data: string }) {
+  constructor({ hasStarted, players }: RoomRO) {
     this.hasStarted = hasStarted;
-    this.data = data;
+    this.data = players;
   }
 
   updateHTMLElement(): void {
     const temporaryList = document.createElement("ul");
     temporaryList.id = "participants-container";
-    const parsedData = JSON.parse(this.data);
+    const parsedData = this.data;
     const colorsValues = {
       red: 4,
       blue: 3,
@@ -22,15 +22,15 @@ export default class Lobby {
       yellow: 1,
     };
     parsedData.sort(
-      (a: { color: ColorType }, b: { color: ColorType }) =>
+      (a: { color: Color }, b: { color: Color }) =>
         colorsValues[b.color] - colorsValues[a.color]
     );
     parsedData.forEach(
-      async (participant: { state: number; name: string; color: string }) => {
+      async (participant: { isReady: boolean; name: string; color: Color }) => {
         const listElement = document.createElement("li");
 
         if (!this.hasStarted) {
-          if (participant.state === 0) {
+          if (!participant.isReady) {
             listElement.style.border = "3px solid red";
             listElement.innerText = `${decodeURIComponent(
               participant.name

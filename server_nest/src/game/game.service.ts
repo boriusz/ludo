@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RedisCacheService } from './redisCache.service';
+import { RedisCacheService } from '../redisCache.service';
 import {
   GameData,
   GameDataRO,

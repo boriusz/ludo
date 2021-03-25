@@ -1,4 +1,4 @@
-import { ColorType, GameData, UserGameData } from "../types";
+import { Color, GameData, UserGameData } from "../types";
 import getPositions from "./positions.js";
 
 const boardBg = new Image();
@@ -49,8 +49,8 @@ export default class Board {
     this.context.clearRect(0, 0, 600, 600);
     this.context.drawImage(boardBg, 0, 0, 600, 600);
     this._playersPositions.forEach((player: { [p: string]: number[] }) => {
-      const obj: { color: ColorType; positions: number[] } = {
-        color: Object.keys(player)[0] as ColorType,
+      const obj: { color: Color; positions: number[] } = {
+        color: Object.keys(player)[0] as Color,
         positions: player[Object.keys(player)[0]],
       };
       const positions = getPositions(obj.color, obj.positions);
@@ -68,12 +68,11 @@ export default class Board {
       pawn.remove();
     });
     const possibleDivs = document.querySelectorAll(".possible-pawn");
-    if (possibleDivs) {
+    if (possibleDivs)
       Array.from(possibleDivs).forEach((child: Element) => child.remove());
-    }
   }
 
-  public renderTurnView(currentTurn: ColorType, rolledNumber: number): void {
+  public renderTurnView(currentTurn: Color, rolledNumber: number): void {
     const currentPlayer = this._playersPositions.find(
       (position: { [p: string]: number[] }) =>
         Object.keys(position)[0] === currentTurn

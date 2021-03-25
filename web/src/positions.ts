@@ -1,5 +1,5 @@
-import { ColorType } from "../types";
-const getPositions = (color: ColorType, positions: number[]) => {
+import { Color } from "../types";
+const getPositions = (color: Color, positions: number[]) => {
   if (color === "red") {
     return positions.map((position: number, index: number) => {
       if (position === 0) return { ...redPos[0][index], isHome: true };
