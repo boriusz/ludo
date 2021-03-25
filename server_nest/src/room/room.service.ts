@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoomEntity } from './room.entity';
 import { Repository } from 'typeorm';
-import {
-  Color,
-  RoomPlayersData,
-  RoomRO,
-  PLAYER_COLORS,
-} from './room.interface';
 import { SessionData } from 'express-session';
 import { UserSessionData } from '../main';
+import {
+  Color,
+  PLAYER_COLORS,
+  RoomPlayersData,
+  RoomRO,
+} from './room.interface';
 
 @Injectable()
 export class RoomService {
@@ -55,7 +55,10 @@ export class RoomService {
     if (!room) return false;
     if (
       room.players.length === 4 ||
-      room.players.every((player: RoomPlayersData) => player.isReady === true)
+      (room.players.length > 1 &&
+        room.players.every(
+          (player: RoomPlayersData) => player.isReady === true
+        ))
     ) {
       room.hasStarted = true;
       await this.start(roomId);
@@ -65,7 +68,11 @@ export class RoomService {
   }
 
   checkIfUserInGame(session: SessionData): boolean {
-    const { inGame, roomId } = session.user;
+    let inGame, roomId;
+    if (session.user) {
+      inGame = session.user.inGame;
+      roomId = session.user.roomId;
+    }
     return !!(inGame && roomId);
   }
 
@@ -80,7 +87,8 @@ export class RoomService {
 
   async joinRoom(
     roomId: number,
-    userCreds: { name: string; userId: string }
+    userCreds: { name: string; userId: string },
+    session: SessionData
   ): Promise<RoomEntity> {
     const room = await this.findOne(roomId);
     const { name, userId } = userCreds;
@@ -96,7 +104,10 @@ export class RoomService {
       isReady: false,
       name,
     });
-    return await this.saveRoom(room);
+    const savedRoom = await this.saveRoom(room);
+    session.user.roomId = savedRoom.id;
+    session.user.inGame = true;
+    return savedRoom;
   }
 
   async createRoom(): Promise<RoomEntity> {
@@ -104,5 +115,23 @@ export class RoomService {
     room.hasStarted = false;
     room.players = [];
     return await this.saveRoom(room);
+  }
+
+  async switchReady(
+    isReady: string,
+    user: UserSessionData
+  ): Promise<RoomEntity> {
+    const { roomId, userId } = user;
+    const room = await this.findOne(roomId);
+    if (room) {
+      const player = room.players.find(
+        (player: RoomPlayersData) => player.userId === userId
+      );
+      player.isReady = isReady === 'true';
+      console.log(player.isReady);
+      const canStart = this.checkIfCanStart(roomId);
+      if (canStart) await this.start(roomId);
+      return await this.saveRoom(room);
+    }
   }
 }

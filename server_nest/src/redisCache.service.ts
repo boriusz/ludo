@@ -1,4 +1,9 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { Cache } from 'cache-manager-redis-store';
 import { Repository } from 'typeorm';
 import { RoomEntity } from './room/room.entity';
@@ -12,12 +17,16 @@ import { RoomPlayersData } from './room/room.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class RedisCacheService {
+export class RedisCacheService implements OnModuleInit {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(RoomEntity)
     private readonly roomRepository: Repository<RoomEntity>
   ) {}
+
+  onModuleInit(): void {
+    this.roomRepository.clear().then(() => console.log('cleared'));
+  }
 
   async set(key: string, value: string): Promise<void> {
     await this.cacheManager.set(key, value);

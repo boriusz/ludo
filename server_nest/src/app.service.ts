@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { UserSessionData } from './main';
 import { join } from 'path';
 import { v4 } from 'uuid';
@@ -7,7 +7,7 @@ import { v4 } from 'uuid';
 export class AppService {
   getProperFile(user: UserSessionData): string {
     if (!user) return join(__dirname, '../', 'public', 'username.html');
-    return join(__dirname, '../', 'public', 'lobby.html');
+    return join(__dirname, '../', 'public', 'index.html');
   }
 
   setUser(username: string): UserSessionData | string {
