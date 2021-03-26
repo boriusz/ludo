@@ -27,7 +27,12 @@ export class RoomController {
       return;
     }
     const canStart = await this.roomService.checkIfCanStart(roomId);
-    if (canStart) return;
+    if (canStart) {
+      await this.roomService.start(roomId);
+      const responseData = await this.roomService.getResponseData(roomId);
+      res.json(responseData);
+      return;
+    }
     const responseData = await this.roomService.getResponseData(roomId);
     res.json(responseData);
     return;

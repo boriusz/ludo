@@ -128,9 +128,9 @@ export class RoomService {
         (player: RoomPlayersData) => player.userId === userId
       );
       player.isReady = isReady === 'true';
-      console.log(player.isReady);
       const canStart = this.checkIfCanStart(roomId);
       if (canStart) await this.start(roomId);
+
       return await this.saveRoom(room);
     }
   }

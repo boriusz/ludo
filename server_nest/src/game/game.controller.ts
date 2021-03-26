@@ -1,4 +1,4 @@
-import { Controller, Get, Session } from '@nestjs/common';
+import { Body, Controller, Get, Post, Session } from '@nestjs/common';
 import { SessionData } from 'express-session';
 import { GameService } from './game.service';
 import { GameDataRO } from './game.interface';
@@ -7,11 +7,26 @@ import { GameDataRO } from './game.interface';
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-  @Get()
+  @Get('data')
   async roomData(@Session() session: SessionData): Promise<GameDataRO> {
-    const { roomId } = session.user;
+    const { roomId, userId } = session.user;
     if (!roomId) return null;
+    return await this.gameService.getGameData(roomId, userId);
+  }
 
-    return await this.gameService.getGameData(roomId);
+  @Get('roll')
+  async rollTheDice(@Session() session: SessionData): Promise<number> {
+    const { roomId, userId } = session.user;
+    return await this.gameService.roll(roomId, userId);
+  }
+
+  @Post('movePawn')
+  async movePawn(
+    @Session() session: SessionData,
+    @Body() body: { pawnId: number }
+  ): Promise<any> {
+    const { pawnId } = body;
+    const { roomId, userId } = session.user;
+    await this.gameService.movePawn(pawnId, roomId, userId);
   }
 }

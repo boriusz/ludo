@@ -50,10 +50,10 @@ export const updateGame = async (): Promise<void> => {
   const { turnStatus } = data;
   Board.removeAllPawns();
   if (!turnStatus) {
-    updateBoard(data as GameData);
+    updateBoard(data);
     const rollButton = document.querySelector(".roll-button");
     if (rollButton) rollButton.parentElement?.removeChild(rollButton);
-    await updateGame();
+    setTimeout(async () => await updateGame(), 1000);
     return;
   }
   updateBoard(data);
@@ -62,7 +62,7 @@ export const updateGame = async (): Promise<void> => {
   if (turnStatus === 2 && !document.querySelector(".pawn"))
     board.renderTurnView(data.currentTurn, data.rolledNumber);
 
-  await updateGame();
+  setTimeout(async () => await updateGame(), 1000);
 };
 
 export const updateLobby = async (): Promise<void> => {

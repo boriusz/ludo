@@ -19,8 +19,8 @@ export default class Board {
     this.context.drawImage(boardBg, 0, 0, 600, 600);
     this._playersPositions = data.players.map((player: UserGameData) => {
       const obj = {
-        color: Object.keys(player)[0],
-        data: Object.values(player)[0].position,
+        color: player.color,
+        data: player.positions,
       };
       return { [obj.color]: obj.data };
     });
@@ -29,8 +29,8 @@ export default class Board {
   set playersPositions(data: { players: UserGameData[] }) {
     this._playersPositions = data.players.map((player: UserGameData) => {
       const obj = {
-        color: Object.keys(player)[0],
-        data: Object.values(player)[0].position,
+        color: player.color,
+        data: player.positions,
       };
       return { [obj.color]: obj.data };
     });

@@ -1,17 +1,13 @@
 export interface UserGameData {
-  [color: string]: {
-    name: string;
-    userId: string;
-    state: number;
-    position: number[];
-  };
+  name: string;
+  color: Color;
+  positions: number[];
 }
 export interface GameData {
   players: UserGameData[];
   currentTurn: Color;
   turnStatus: number;
   rolledNumber: number;
-  hasChanged?: boolean | null;
 }
 
 export interface RoomRO {

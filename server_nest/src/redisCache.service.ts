@@ -28,12 +28,16 @@ export class RedisCacheService implements OnModuleInit {
     this.roomRepository.clear().then(() => console.log('cleared'));
   }
 
-  async set(key: string, value: string): Promise<void> {
-    await this.cacheManager.set(key, value);
+  async set(key: number, value: GameData): Promise<void> {
+    await this.cacheManager.set(key.toString(), JSON.stringify(value));
   }
 
-  async get(key: string): Promise<string> {
-    return await this.cacheManager.get(key);
+  async get(key: number): Promise<GameData> {
+    let data = await this.cacheManager.get(key.toString());
+    if (!data) await this.cacheDbData(key);
+    data = await this.cacheManager.get(key.toString());
+    const gameData: GameData = JSON.parse(data);
+    return gameData;
   }
 
   async cacheDbData(roomId: number): Promise<void> {
@@ -53,11 +57,11 @@ export class RedisCacheService implements OnModuleInit {
       .sort((a: Color, b: Color) => colorsValues[b] - colorsValues[a]);
     const gameData: GameData = {
       players: playersData,
-      turnStatus: null,
+      turnStatus: 1,
       rolledNumber: null,
       currentTurn: colorsInGame[0],
     };
-    await this.set(id.toString(), JSON.stringify(gameData));
+    await this.set(id, gameData);
     return null;
   }
 }
