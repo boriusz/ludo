@@ -7,7 +7,7 @@ import Dice from "./Dice.js";
 let lobbyRefreshInterval: number;
 
 const fetchLobbyData = async () => {
-  const data = await fetch(`api/room`, {
+  const data = await fetch(`/room`, {
     redirect: "follow",
   });
   const parsedData = await data.json();
@@ -50,10 +50,10 @@ export const updateGame = async (): Promise<void> => {
   const { turnStatus } = data;
   Board.removeAllPawns();
   if (!turnStatus) {
-    updateBoard(data as GameData);
+    updateBoard(data);
     const rollButton = document.querySelector(".roll-button");
     if (rollButton) rollButton.parentElement?.removeChild(rollButton);
-    await updateGame();
+    setTimeout(async () => await updateGame(), 1000);
     return;
   }
   updateBoard(data);
@@ -62,7 +62,7 @@ export const updateGame = async (): Promise<void> => {
   if (turnStatus === 2 && !document.querySelector(".pawn"))
     board.renderTurnView(data.currentTurn, data.rolledNumber);
 
-  await updateGame();
+  setTimeout(async () => await updateGame(), 1000);
 };
 
 export const updateLobby = async (): Promise<void> => {
@@ -85,12 +85,9 @@ if (readyDescription && readyButton) {
     readyButton.checked
       ? (readyDescription.innerText = `I'm ready`)
       : (readyDescription.innerText = `I'm waiting`);
-    await fetch(
-      `http://192.168.1.8:4000/api/room/ready/${readyButton.checked}`,
-      {
-        method: "POST",
-      }
-    );
+    await fetch(`http://192.168.1.8:4000/room/ready/${readyButton.checked}`, {
+      method: "POST",
+    });
   });
 }
 

@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "room": {
+      "type": "library",
+      "root": "libs/room",
+      "entryFile": "index",
+      "sourceRoot": "libs/room/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/room/tsconfig.lib.json"
+      }
+    }
+  },
+  "compilerOptions": {
+    "webpack": true
+  }
+}

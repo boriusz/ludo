@@ -1,17 +1,22 @@
 export interface UserGameData {
-  [color: string]: {
-    name: string;
-    userId: string;
-    state: number;
-    position: number[];
-  };
+  name: string;
+  color: Color;
+  positions: number[];
 }
 export interface GameData {
   players: UserGameData[];
-  currentTurn: ColorType;
+  currentTurn: Color;
   turnStatus: number;
   rolledNumber: number;
-  hasChanged?: boolean | null;
 }
 
-export type ColorType = "red" | "blue" | "green" | "yellow";
+export interface RoomRO {
+  players: {
+    name: string;
+    isReady: boolean;
+    color: Color;
+  }[];
+  hasStarted: boolean;
+}
+
+export type Color = "red" | "blue" | "green" | "yellow";
