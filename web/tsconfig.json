@@ -8,7 +8,7 @@
       "ESNext",
       "dom"
     ],
-    "outDir": "../server/dist/public/",
+    "outDir": "../server_nest/public/",
     "removeComments": true,
     "noImplicitAny": true,
     "strictNullChecks": true,

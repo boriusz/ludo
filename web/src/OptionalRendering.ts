@@ -8,7 +8,7 @@ export default class OptionalRendering {
     const switcher = document.querySelector<HTMLElement>(".switch");
     const canvasElement = document.createElement("canvas");
     canvasElement.height = 600;
-    canvasElement.width = 600;
+    canvasElement.width = 700;
 
     const gameWrapper = document.createElement("div");
     gameWrapper.className = "game-wrapper";

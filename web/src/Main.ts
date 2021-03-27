@@ -27,8 +27,7 @@ const fetchGameData = async () => {
   });
   if (data.redirected) window.location.href = data.url;
 
-  const parsedData = await data.json();
-  return parsedData;
+  return await data.json();
 };
 
 let lobby: Lobby;
@@ -43,25 +42,23 @@ const updateBoard = (data: GameData) => {
   }
   board.playersPositions = data;
   board.render();
+  if (data.rolledNumber) board.renderDice(data.rolledNumber);
 };
 
 export const updateGame = async (): Promise<void> => {
   const data: GameData = await fetchGameData();
   const { turnStatus } = data;
-  Board.removeAllPawns();
-  if (!turnStatus) {
-    updateBoard(data);
-    const rollButton = document.querySelector(".roll-button");
-    if (rollButton) rollButton.parentElement?.removeChild(rollButton);
-    setTimeout(async () => await updateGame(), 1000);
-    return;
-  }
   updateBoard(data);
-  if (turnStatus === 1) dice.renderRollButton();
-
-  if (turnStatus === 2 && !document.querySelector(".pawn"))
-    board.renderTurnView(data.currentTurn, data.rolledNumber);
-
+  if (!turnStatus) {
+    Board.removeAllPawns();
+    const rollButton = document.querySelector(".roll-button");
+    if (rollButton) rollButton.remove();
+  } else {
+    updateBoard(data);
+    if (turnStatus === 1) dice.renderRollButton();
+    if (turnStatus === 2 && !document.querySelector(".pawn"))
+      board.renderTurnView(data.currentTurn, data.rolledNumber);
+  }
   setTimeout(async () => await updateGame(), 1000);
 };
 
