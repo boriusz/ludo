@@ -3,6 +3,8 @@ import getPositions from "./positions.js";
 
 const boardBg = new Image();
 boardBg.src = "../../images/board.png";
+const diceImg = new Image();
+diceImg.src = "../../images/dice.png";
 
 export default class Board {
   private context: CanvasRenderingContext2D;
@@ -16,7 +18,7 @@ export default class Board {
     const context = canvas.getContext("2d");
     if (!context) return;
     this.context = context;
-    this.context.drawImage(boardBg, 0, 0, 600, 600);
+    this.context.drawImage(boardBg, 100, 0, 600, 600);
     this._playersPositions = data.players.map((player: UserGameData) => {
       const obj = {
         color: player.color,
@@ -39,15 +41,15 @@ export default class Board {
   private drawCircle(x: number, y: number, color: string) {
     const { context } = this;
     context.beginPath();
-    context.arc(x, y, 15, 0, 2 * Math.PI, false);
+    context.arc(x + 100, y, 15, 0, 2 * Math.PI, false);
     context.fillStyle = color;
     context.fill();
     context.stroke();
   }
 
   public render(): void {
-    this.context.clearRect(0, 0, 600, 600);
-    this.context.drawImage(boardBg, 0, 0, 600, 600);
+    this.context.clearRect(0, 0, 700, 600);
+    this.context.drawImage(boardBg, 100, 0, 600, 600);
     this._playersPositions.forEach((player: { [p: string]: number[] }) => {
       const obj: { color: Color; positions: number[] } = {
         color: Object.keys(player)[0] as Color,
@@ -57,9 +59,21 @@ export default class Board {
       if (!positions) return;
       for (const position of positions)
         this.drawCircle(position.x, position.y, obj.color);
-
-      // this.context.moveTo();
     });
+  }
+
+  public renderDice(rolled: number): void {
+    this.context.drawImage(
+      diceImg,
+      (rolled - 1) * 64,
+      3 * 64,
+      64,
+      64,
+      18,
+      (600 - 64) / 2,
+      64,
+      64
+    );
   }
 
   public static removeAllPawns(): void {
@@ -85,7 +99,7 @@ export default class Board {
         const pawn = document.createElement("div");
         pawn.className = "pawn";
         pawn.style.top = (position.y - 20).toString() + "px";
-        pawn.style.left = (position.x - 20).toString() + "px";
+        pawn.style.left = (position.x + 80).toString() + "px";
         setInterval(() => {
           pawn.classList.toggle("pawn-blink");
         }, 500);
@@ -105,7 +119,7 @@ export default class Board {
             const possiblePawn = document.createElement("div");
             possiblePawn.className = "possible-pawn";
             possiblePawn.style.top = (nextPosition.y - 20).toString() + "px";
-            possiblePawn.style.left = (nextPosition.x - 20).toString() + "px";
+            possiblePawn.style.left = (nextPosition.x + 80).toString() + "px";
             this.gameWrapper?.appendChild(possiblePawn);
           }
         };

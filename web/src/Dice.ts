@@ -4,8 +4,16 @@ import { UserGameData } from "../types";
 export default class Dice {
   private readonly gameWrapper: HTMLElement | null;
   public rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
+  private voice: SpeechSynthesisVoice;
   constructor() {
     this.gameWrapper = document.querySelector(".game-wrapper");
+    const synth = window.speechSynthesis;
+    const interval = setInterval(() => {
+      if (synth.getVoices().length !== 0) {
+        this.voice = synth.getVoices()[0];
+        clearInterval(interval);
+      }
+    }, 10);
   }
 
   public async roll(): Promise<void> {
@@ -17,9 +25,27 @@ export default class Dice {
     if (rolledNumber) this.rolledNumber = rolledNumber;
     else this.rolledNumber = parsedResponse;
     if (players) {
-      const data = { players };
-      board.playersPositions = data;
+      board.playersPositions = { players };
       board.renderTurnView(currentTurn, rolledNumber);
+    }
+  }
+
+  private static convertNumberToString(num: number): string {
+    if (num === 1) return "wylosowana liczba: jeden";
+    else if (num === 2) return "wylosowana liczba: dwa";
+    else if (num === 3) return "wylosowana liczba: trzy";
+    else if (num === 4) return "wylosowana liczba: cztery";
+    else if (num === 5) return "wylosowana liczba: pięć";
+    else if (num === 6) return "wylosowana liczba: sześć";
+    return "achtung";
+  }
+
+  private speak(rolled: number | null) {
+    if (rolled) {
+      const numberAsText = Dice.convertNumberToString(rolled);
+      const utterance = new SpeechSynthesisUtterance(numberAsText);
+      utterance.voice = this.voice;
+      speechSynthesis.speak(utterance);
     }
   }
 
@@ -28,11 +54,12 @@ export default class Dice {
     const rollButton = document.createElement("button");
     rollButton.className = "roll-button";
     rollButton.innerText = "Roll";
-    rollButton.addEventListener("click", async () => {
+    rollButton.addEventListener("click", async (e: MouseEvent) => {
       await this.roll();
-      console.log(this.rolledNumber);
+      this.speak(this.rolledNumber);
+      const target = e.target as Element;
+      target.remove();
     });
-    if (this.gameWrapper)
-      this.gameWrapper.insertAdjacentElement("beforebegin", rollButton);
+    if (this.gameWrapper) this.gameWrapper.prepend(rollButton);
   }
 }
