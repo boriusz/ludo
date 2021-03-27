@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Username</title>
+</head>
+<body style="height: 100vh;background: rgba(0,0,0, 0.5); display: flex; justify-content: center; align-items: center">
+    <input id="text" type="text" name="username" placeholder="Podaj swój nick">
+    <input id="submit" type="submit" value="Ustaw">
+<script>
+    const text = document.querySelector('#text')
+    const submit = document.querySelector('#submit')
+
+    submit.addEventListener('click', async () => {
+        const username = text.value
+        const body = JSON.stringify({username})
+        const response = await fetch('/setUsername', {
+            method: "POST",
+            headers: {'Content-Type' : 'application/json'},
+            body,
+            redirect: 'follow'
+        })
+        if (response.redirected) {
+            window.location.href = response.url
+        } else {
+            document.open('text/html')
+            document.write(await response.json())
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,16 +1,16 @@
 import Lobby from "./Lobby.js";
 import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";
-import { GameData } from "../types";
+import { GameData, RoomRO } from "../types";
 import Dice from "./Dice.js";
 
 let lobbyRefreshInterval: number;
 
-const fetchLobbyData = async () => {
+const fetchLobbyData = async (): Promise<RoomRO> => {
   const data = await fetch(`/room`, {
     redirect: "follow",
   });
-  const parsedData = await data.json();
+  const parsedData: RoomRO = await data.json();
   if (data.redirected) window.location.href = data.url;
   if (parsedData.hasStarted) {
     clearInterval(lobbyRefreshInterval);
@@ -62,14 +62,16 @@ export const updateGame = async (): Promise<void> => {
   setTimeout(async () => await updateGame(), 1000);
 };
 
-export const updateLobby = async (): Promise<void> => {
+export const updateLobby = async (): Promise<RoomRO> => {
   const data = await fetchLobbyData();
   lobby = new Lobby(data);
   lobby.updateHTMLElement();
+  return data;
 };
 
-updateLobby().then(() => {
-  lobbyRefreshInterval = window.setInterval(() => updateLobby(), 1000);
+updateLobby().then((r: RoomRO) => {
+  if (!r.hasStarted)
+    lobbyRefreshInterval = window.setInterval(() => updateLobby(), 1000);
 });
 
 const readyButton = document.querySelector<HTMLInputElement>("#ready-button");

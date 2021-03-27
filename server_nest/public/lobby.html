@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ludo</title>
+    <link rel="stylesheet" href="../../css/lobby.css" />
+  </head>
+  <body>
+    <header id="header">Ludo</header>
+    <div id="lobby-wrapper">
+      <div id="lobby-container">
+        <ul id="participants-container"></ul>
+        <div id="ready-button-wrapper">
+          <div id="ready-description">I'm waiting</div>
+          <label class="switch">
+            <input type="checkbox" id="ready-button" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div id="game-status"></div>
+      </div>
+    </div>
+    <script>
+        const scriptElem = document.createElement("script");
+        scriptElem.type = "module";
+        scriptElem.src = `../../src/Main.js`;
+        document.querySelector("head").appendChild(scriptElem);
+    </script>
+  <div class="game-container"></div>
+  </body>
+</html>
