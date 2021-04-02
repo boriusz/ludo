@@ -31,5 +31,6 @@ export class AppController {
     const user = this.appService.setUser(username);
     if (typeof user === 'string') return { url: 'http://192.168.1.8:4000/' };
     req.session.user = user;
+    return 'ok';
   }
 }

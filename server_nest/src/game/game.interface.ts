@@ -1,5 +1,12 @@
+type Placement = 1 | 2 | 3 | 4;
+interface Finish {
+  player: PlayerData;
+  placement: Placement;
+}
+type FinishRO = PlayerDataRO[] & Placement;
 export interface GameData {
   players: PlayerData[];
+  finished: Finish[];
   currentTurn: Color;
   turnStatus: 1 | 2 | null;
   rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
@@ -20,6 +27,7 @@ export interface PlayerDataRO {
 
 export interface GameDataRO {
   players: PlayerDataRO[];
+  finished: FinishRO[];
   currentTurn: Color;
   turnStatus: 1 | 2 | null;
   rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
@@ -28,8 +36,8 @@ export interface GameDataRO {
 export type Color = 'red' | 'blue' | 'green' | 'yellow';
 
 export const colorsValues = {
-  red: 4,
-  blue: 3,
+  red: 0,
+  blue: 1,
   green: 2,
-  yellow: 1,
+  yellow: 3,
 };

@@ -54,9 +54,10 @@ export class RedisCacheService implements OnModuleInit {
     );
     const colorsInGame: Color[] = playersData
       .map((player: PlayerData) => player.color)
-      .sort((a: Color, b: Color) => colorsValues[b] - colorsValues[a]);
+      .sort((a: Color, b: Color) => colorsValues[a] - colorsValues[b]);
     const gameData: GameData = {
       players: playersData,
+      finished: [],
       turnStatus: 1,
       rolledNumber: null,
       currentTurn: colorsInGame[0],

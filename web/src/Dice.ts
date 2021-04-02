@@ -24,13 +24,15 @@ export default class Dice {
     const currentTurn = parsedResponse?.currentTurn;
     if (rolledNumber) this.rolledNumber = rolledNumber;
     else this.rolledNumber = parsedResponse;
+    board.renderDice(this.rolledNumber as number);
     if (players) {
+      console.log(rolledNumber);
       board.playersPositions = { players };
       board.renderTurnView(currentTurn, rolledNumber);
     }
   }
 
-  private static convertNumberToString(num: number): string {
+  private static convertNumberToSentence(num: number): string {
     if (num === 1) return "wylosowana liczba: jeden";
     else if (num === 2) return "wylosowana liczba: dwa";
     else if (num === 3) return "wylosowana liczba: trzy";
@@ -42,7 +44,7 @@ export default class Dice {
 
   private speak(rolled: number | null) {
     if (rolled) {
-      const numberAsText = Dice.convertNumberToString(rolled);
+      const numberAsText = Dice.convertNumberToSentence(rolled);
       const utterance = new SpeechSynthesisUtterance(numberAsText);
       utterance.voice = this.voice;
       speechSynthesis.speak(utterance);

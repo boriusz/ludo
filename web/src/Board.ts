@@ -58,7 +58,7 @@ export default class Board {
       const positions = getPositions(obj.color, obj.positions);
       if (!positions) return;
       for (const position of positions)
-        this.drawCircle(position.x, position.y, obj.color);
+        if (position) this.drawCircle(position.x, position.y, obj.color);
     });
   }
 
@@ -76,7 +76,7 @@ export default class Board {
     );
   }
 
-  public static removeAllPawns(): void {
+  public removeAllPawns(): void {
     const pawns = document.querySelectorAll(".pawn");
     pawns.forEach((pawn: Element) => {
       pawn.remove();
@@ -94,8 +94,13 @@ export default class Board {
     if (!currentPlayer) return;
     const positions = getPositions(currentTurn, currentPlayer[currentTurn]);
     positions?.forEach(
-      (position: { x: number; y: number; isHome?: boolean }, index: number) => {
+      (
+        position: { x: number; y: number; isHome?: boolean } | null,
+        index: number
+      ) => {
+        if (!position) return;
         if (rolledNumber !== 1 && rolledNumber !== 6 && position.isHome) return;
+        if (currentPlayer[currentTurn][index] + rolledNumber > 105) return;
         const pawn = document.createElement("div");
         pawn.className = "pawn";
         pawn.style.top = (position.y - 20).toString() + "px";
@@ -106,7 +111,10 @@ export default class Board {
         pawn.onmouseover = () => {
           const elapsedPositions = currentPlayer[currentTurn].map(
             (item: number) => {
-              if (item === 0) return 1;
+              if (item === 0 && (rolledNumber === 1 || rolledNumber || 6))
+                return 1;
+              if (item + rolledNumber > 51 && item < 100)
+                return item + rolledNumber - 52 + 100;
               return item + rolledNumber;
             }
           );
@@ -132,13 +140,12 @@ export default class Board {
           }
         };
         pawn.addEventListener("click", async () => {
-          const body = JSON.stringify({ pawnId: index });
           const headers = { "Content-Type": "application/json" };
-          await fetch("/game/movePawn", {
-            method: "post",
+          await fetch(`/game/movePawn?pawnId=${index}`, {
+            method: "put",
             headers,
-            body,
           });
+          this.removeAllPawns();
         });
         this.gameWrapper?.appendChild(pawn);
       }

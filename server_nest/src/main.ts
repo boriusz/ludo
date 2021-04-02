@@ -17,6 +17,11 @@ export interface UserSessionData {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: '*',
+    allowedHeaders: '*',
+    methods: ['POST', 'GET', 'PUT'],
+  });
   app.use(
     session({
       secret: 'secretsessionkeyhehe',
