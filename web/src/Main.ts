@@ -1,3 +1,4 @@
+// TODO: Ten plik zmienić na Game i walnąc to jako klase esa
 import Lobby from "./Lobby.js";
 import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";

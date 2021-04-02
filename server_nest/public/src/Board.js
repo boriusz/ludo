@@ -60,13 +60,14 @@ export default class Board {
             if (!positions)
                 return;
             for (const position of positions)
-                this.drawCircle(position.x, position.y, obj.color);
+                if (position)
+                    this.drawCircle(position.x, position.y, obj.color);
         });
     }
     renderDice(rolled) {
         this.context.drawImage(diceImg, (rolled - 1) * 64, 3 * 64, 64, 64, 18, (600 - 64) / 2, 64, 64);
     }
-    static removeAllPawns() {
+    removeAllPawns() {
         const pawns = document.querySelectorAll(".pawn");
         pawns.forEach((pawn) => {
             pawn.remove();
@@ -82,7 +83,11 @@ export default class Board {
         const positions = getPositions(currentTurn, currentPlayer[currentTurn]);
         positions === null || positions === void 0 ? void 0 : positions.forEach((position, index) => {
             var _a;
+            if (!position)
+                return;
             if (rolledNumber !== 1 && rolledNumber !== 6 && position.isHome)
+                return;
+            if (currentPlayer[currentTurn][index] + rolledNumber > 105)
                 return;
             const pawn = document.createElement("div");
             pawn.className = "pawn";
@@ -94,8 +99,10 @@ export default class Board {
             pawn.onmouseover = () => {
                 var _a;
                 const elapsedPositions = currentPlayer[currentTurn].map((item) => {
-                    if (item === 0)
+                    if (item === 0 && (rolledNumber === 1 || rolledNumber || 6))
                         return 1;
+                    if (item + rolledNumber > 51 && item < 100)
+                        return item + rolledNumber - 52 + 100;
                     return item + rolledNumber;
                 });
                 const possibleNextPosition = getPositions(currentTurn, elapsedPositions);
@@ -115,13 +122,12 @@ export default class Board {
                 }
             };
             pawn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
-                const body = JSON.stringify({ pawnId: index });
                 const headers = { "Content-Type": "application/json" };
-                yield fetch("/game/movePawn", {
-                    method: "post",
+                yield fetch(`/game/movePawn?pawnId=${index}`, {
+                    method: "put",
                     headers,
-                    body,
                 });
+                this.removeAllPawns();
             }));
             (_a = this.gameWrapper) === null || _a === void 0 ? void 0 : _a.appendChild(pawn);
         });

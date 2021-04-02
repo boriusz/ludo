@@ -22,14 +22,14 @@ export class AppController {
   }
 
   @Post('/setUsername')
-  @Redirect('http://192.168.1.8:4000/room/join')
+  @Redirect('/room/join')
   setUsername(
     @Session() session: SessionData,
     @Req() req: Request
   ): string | { url: string } {
     const { username } = req.body;
     const user = this.appService.setUser(username);
-    if (typeof user === 'string') return { url: 'http://192.168.1.8:4000/' };
+    if (typeof user === 'string') return { url: '/' };
     req.session.user = user;
     return 'ok';
   }

@@ -1,8 +1,8 @@
 {
-  "name": "nest-typescript-starter",
+  "name": "Chinol",
   "private": true,
   "version": "1.0.0",
-  "description": "Nest TypeScript starter repository",
+  "description": "Ludo online game",
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",

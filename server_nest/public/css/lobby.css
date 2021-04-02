@@ -164,6 +164,7 @@ input:checked + .slider:before {
 
 .pawn {
     position: absolute;
+    cursor: pointer;
     width: 40px;
     height: 40px;
     margin: 0;

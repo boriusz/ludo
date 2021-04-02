@@ -54,13 +54,12 @@ export const updateGame = () => __awaiter(void 0, void 0, void 0, function* () {
     const { turnStatus } = data;
     updateBoard(data);
     if (!turnStatus) {
-        Board.removeAllPawns();
+        board.removeAllPawns();
         const rollButton = document.querySelector(".roll-button");
         if (rollButton)
             rollButton.remove();
     }
     else {
-        updateBoard(data);
         if (turnStatus === 1)
             dice.renderRollButton();
         if (turnStatus === 2 && !document.querySelector(".pawn"))

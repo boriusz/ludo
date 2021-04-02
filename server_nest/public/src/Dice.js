@@ -30,13 +30,15 @@ export default class Dice {
                 this.rolledNumber = rolledNumber;
             else
                 this.rolledNumber = parsedResponse;
+            board.renderDice(this.rolledNumber);
             if (players) {
+                console.log(rolledNumber);
                 board.playersPositions = { players };
                 board.renderTurnView(currentTurn, rolledNumber);
             }
         });
     }
-    static convertNumberToString(num) {
+    static convertNumberToSentence(num) {
         if (num === 1)
             return "wylosowana liczba: jeden";
         else if (num === 2)
@@ -53,7 +55,7 @@ export default class Dice {
     }
     speak(rolled) {
         if (rolled) {
-            const numberAsText = Dice.convertNumberToString(rolled);
+            const numberAsText = Dice.convertNumberToSentence(rolled);
             const utterance = new SpeechSynthesisUtterance(numberAsText);
             utterance.voice = this.voice;
             speechSynthesis.speak(utterance);
