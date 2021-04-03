@@ -9,7 +9,15 @@ import { join } from 'path';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      synchronize: true,
+      keepConnectionAlive: true,
+      name: 'default',
+      logging: false,
+      entities: ['dist/**/**.entity{.ts,.js}'],
+      url: process.env.DATABASE_URL || 'localhost',
+    }),
     RoomModule,
     GameModule,
     ServeStaticModule.forRoot({

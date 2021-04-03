@@ -42,8 +42,7 @@ export class RoomController {
   @Redirect()
   async joinRoom(@Session() session: SessionData): Promise<{ url: string }> {
     const isUserInGame = await this.roomService.checkIfUserInGame(session);
-    if (isUserInGame || !session.user)
-      return { url: 'http://192.168.1.8:4000/' };
+    if (isUserInGame || !session.user) return { url: '/' };
     const roomToJoin = await this.roomService.findRoomWithPlaceForNextUser();
     const userCreds = { name: session.user.name, userId: session.user.userId };
     if (!roomToJoin) {
@@ -52,12 +51,12 @@ export class RoomController {
     } else {
       await this.roomService.joinRoom(roomToJoin.id, userCreds, session);
     }
-    return { url: 'http://192.168.1.8:4000/' };
+    return { url: '/' };
   }
 
   @Post('/ready/:isReady')
   async switchReady(
-    @Param() params,
+    @Param() params: Parameters<never>,
     @Session() session: SessionData,
     @Res() res: Response
   ): Promise<void> {

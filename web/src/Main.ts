@@ -84,7 +84,7 @@ if (readyDescription && readyButton) {
     readyButton.checked
       ? (readyDescription.innerText = `I'm ready`)
       : (readyDescription.innerText = `I'm waiting`);
-    await fetch(`http://192.168.1.8:4000/room/ready/${readyButton.checked}`, {
+    await fetch(`/room/ready/${readyButton.checked}`, {
       method: "POST",
     });
   });
