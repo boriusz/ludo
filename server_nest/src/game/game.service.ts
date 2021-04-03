@@ -5,7 +5,6 @@ import {
   colorsValues,
   Finish,
   GameData,
-  GameDataRO,
   PlayerData,
   PlayerDataRO,
 } from './game.interface';
@@ -14,22 +13,64 @@ import {
 export class GameService {
   constructor(private readonly redisCacheService: RedisCacheService) {}
 
-  async getGameData(gameId: number, userId: string): Promise<GameDataRO> {
-    const cachedData = await this.redisCacheService.get(gameId);
-    const isPlayersTurn = await this.checkIfIsPlayersTurn(cachedData, userId);
-    const mappedPlayers: PlayerDataRO[] = cachedData.players.map(
+  async getGameData(gameId: number, userId: string): Promise<GameData> {
+    const gameData = await this.redisCacheService.get(gameId);
+    const isPlayersTurn = await this.checkIfIsPlayersTurn(gameData, userId);
+    const {
+      finished,
+      turnTime,
+      currentTurn,
+      rolledNumber,
+      turnStatus,
+    } = gameData;
+    const mappedPlayers: PlayerDataRO[] = gameData.players.map(
       (player: PlayerData) => ({
         color: player.color,
         name: player.name,
         positions: player.positions,
       })
     );
+    const mappedFinished = finished.map((item: Finish) => {
+      const { userId, ...data } = item.player as PlayerData;
+      return { player: data as PlayerDataRO, placement: item.placement };
+    });
+    if (gameData.players.length === gameData.finished.length) {
+      gameData.ended = true;
+      await this.redisCacheService.set(gameId, gameData);
+      return {
+        players: mappedPlayers,
+        finished: mappedFinished,
+        turnTime: null,
+        ended: true,
+        currentTurn: null,
+        rolledNumber: null,
+        turnStatus: null,
+      };
+    }
+    if (turnTime <= Date.now()) {
+      const currPlayer = gameData.players.find(
+        (player: PlayerData) => player.color === gameData.currentTurn
+      ) as PlayerData;
+      currPlayer.isAFK = true;
+      await this.redisCacheService.set(gameId, gameData);
+      await this.passTurnToNextPlayer(gameId);
+      const data = await this.redisCacheService.get(gameId);
+      return {
+        players: mappedPlayers,
+        finished: mappedFinished,
+        turnTime: data.turnTime - Date.now(),
+        currentTurn: data.currentTurn,
+        rolledNumber: isPlayersTurn ? data.rolledNumber : null,
+        turnStatus: isPlayersTurn ? data.turnStatus : null,
+      };
+    }
     return {
       players: mappedPlayers,
-      finished: [], // TODO: find all players that finished
-      currentTurn: cachedData.currentTurn,
-      rolledNumber: isPlayersTurn ? cachedData.rolledNumber : null,
-      turnStatus: isPlayersTurn ? cachedData.turnStatus : null,
+      finished,
+      turnTime: turnTime - Date.now(),
+      currentTurn,
+      rolledNumber: isPlayersTurn ? rolledNumber : null,
+      turnStatus: isPlayersTurn ? turnStatus : null,
     };
   }
 
@@ -58,6 +99,15 @@ export class GameService {
       gameData.currentTurn = colorsInGame[0];
     else gameData.currentTurn = colorsInGame[currentTurnIndex + 1];
 
+    const nextPlayer = gameData.players.find(
+      (player: PlayerData) => player.color === gameData.currentTurn
+    ) as PlayerData;
+    if (!nextPlayer) {
+      console.log('game ended');
+      return;
+    }
+    if (nextPlayer.isAFK) gameData.turnTime = Date.now() + 1000 * 11;
+    else gameData.turnTime = Date.now() + 1000 * 61;
     await this.redisCacheService.set(gameId, gameData);
   }
 
@@ -68,13 +118,18 @@ export class GameService {
       const { rolledNumber } = gameData;
       if (rolledNumber) return rolledNumber;
       const player = await this.getCurrentPlayer(gameData, userId);
+      player.isAFK = false;
       const { positions } = player;
       const newlyRolledNum = Math.floor(Math.random() * 6) + 1;
       if (
         (positions.every((position: number) => position === 0) &&
           newlyRolledNum !== 1 &&
           newlyRolledNum !== 6) || // Cant move anything bc everything is at start
-        positions.every((position: number) => position + newlyRolledNum > 105)
+        positions.every(
+          (position: number) =>
+            position + newlyRolledNum > 105 ||
+            (position === 0 && newlyRolledNum !== 1 && newlyRolledNum !== 6)
+        )
       ) {
         gameData.rolledNumber = newlyRolledNum as 1 | 2 | 3 | 4 | 5 | 6;
         gameData.turnStatus = 2;
@@ -102,7 +157,7 @@ export class GameService {
   ): Promise<PlayerData> {
     return gameData.players.find(
       (player: PlayerData) => player.userId === userId
-    );
+    ) as PlayerData;
   }
 
   async movePawn(
@@ -132,7 +187,6 @@ export class GameService {
         await this.passTurnToNextPlayer(gameId);
         return;
       }
-
       await this.killPawns(gameId, gameData, pawnId);
     }
   }
@@ -146,7 +200,7 @@ export class GameService {
     gameData.rolledNumber = null;
     console.log(`Player ${player.name} finished game placing: ${placement}`);
     if (gameData.finished.length === gameData.players.length)
-      console.log('game neded');
+      console.log('game ended');
 
     return gameData;
   }

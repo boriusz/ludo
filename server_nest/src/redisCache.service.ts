@@ -47,6 +47,7 @@ export class RedisCacheService implements OnModuleInit {
     const playersData: PlayerData[] = players.map(
       (player: RoomPlayersData) => ({
         name: player.name,
+        isAFK: false,
         userId: player.userId,
         color: player.color,
         positions: [0, 0, 0, 0],
@@ -58,6 +59,7 @@ export class RedisCacheService implements OnModuleInit {
     const gameData: GameData = {
       players: playersData,
       finished: [],
+      turnTime: Date.now() + 1000 * 61,
       turnStatus: 1,
       rolledNumber: null,
       currentTurn: colorsInGame[0],

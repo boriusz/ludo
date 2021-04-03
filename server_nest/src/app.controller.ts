@@ -16,8 +16,13 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  load(@Session() session: SessionData, @Res() res: Response): void {
+  load(
+    @Session() session: SessionData,
+    @Res() res: Response
+  ): Response | { url: string } {
     const { user } = session;
+    console.log(user);
+    if (user && !user.inGame && !user.roomId) return { url: '/room/join' };
     res.sendFile(this.appService.getProperFile(user));
   }
 

@@ -1,5 +1,5 @@
 import { board } from "./Main.js";
-import { UserGameData } from "../types";
+import { PlayerData } from "../types";
 
 export default class Dice {
   private readonly gameWrapper: HTMLElement | null;
@@ -20,7 +20,7 @@ export default class Dice {
     const response = await fetch("/game/roll");
     const parsedResponse = await response.json();
     const { rolledNumber } = parsedResponse;
-    const players: UserGameData[] = parsedResponse?.players;
+    const players: PlayerData[] = parsedResponse?.players;
     const currentTurn = parsedResponse?.currentTurn;
     if (rolledNumber) this.rolledNumber = rolledNumber;
     else this.rolledNumber = parsedResponse;
@@ -33,12 +33,12 @@ export default class Dice {
   }
 
   private static convertNumberToSentence(num: number): string {
-    if (num === 1) return "wylosowana liczba: jeden";
-    else if (num === 2) return "wylosowana liczba: dwa";
-    else if (num === 3) return "wylosowana liczba: trzy";
-    else if (num === 4) return "wylosowana liczba: cztery";
-    else if (num === 5) return "wylosowana liczba: pięć";
-    else if (num === 6) return "wylosowana liczba: sześć";
+    if (num === 1) return "jeden";
+    else if (num === 2) return "dwa";
+    else if (num === 3) return "trzy";
+    else if (num === 4) return "cztery";
+    else if (num === 5) return "pięć";
+    else if (num === 6) return "sześć";
     return "achtung";
   }
 
