@@ -3,6 +3,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Redirect,
   Res,
   Session,
@@ -41,9 +42,9 @@ export class RoomController {
   @Get('join')
   @Redirect()
   async joinRoom(@Session() session: SessionData): Promise<{ url: string }> {
-    const isUserInGame = await this.roomService.checkIfUserInGame(session);
-    if (isUserInGame || !session.user)
-      return { url: 'http://192.168.1.8:4000/' };
+    console.log('joining');
+    const isUserInGame = this.roomService.checkIfUserInGame(session);
+    if (isUserInGame || !session.user) return { url: '/' };
     const roomToJoin = await this.roomService.findRoomWithPlaceForNextUser();
     const userCreds = { name: session.user.name, userId: session.user.userId };
     if (!roomToJoin) {
@@ -52,21 +53,20 @@ export class RoomController {
     } else {
       await this.roomService.joinRoom(roomToJoin.id, userCreds, session);
     }
-    return { url: 'http://192.168.1.8:4000/' };
+    return { url: '/' };
   }
 
-  @Post('/ready/:isReady')
+  @Post('/ready')
+  @Redirect()
   async switchReady(
-    @Param() params,
+    @Query() params,
     @Session() session: SessionData,
     @Res() res: Response
-  ): Promise<void> {
-    const { isReady } = params;
+  ): Promise<string | { url: string }> {
+    const { ready } = params;
     const { user } = session;
-    if (!user || !user.inGame || !user.roomId) {
-      res.redirect('/room/join');
-      return;
-    }
-    await this.roomService.switchReady(isReady, user);
+    if (!user || !user.inGame || !user.roomId) return { url: 'room/join' };
+    await this.roomService.switchReady(ready, user);
+    return 'ok';
   }
 }

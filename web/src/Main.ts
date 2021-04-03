@@ -1,78 +1,104 @@
-// TODO: Ten plik zmienić na Game i walnąc to jako klase esa
 import Lobby from "./Lobby.js";
 import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";
-import { GameData, RoomRO } from "../types";
+import { Finish, GameData, RoomRO } from "../types";
 import Dice from "./Dice.js";
 
 let lobbyRefreshInterval: number;
-
-const fetchLobbyData = async (): Promise<RoomRO> => {
-  const data = await fetch(`/room`, {
-    redirect: "follow",
-  });
-  const parsedData: RoomRO = await data.json();
-  if (data.redirected) window.location.href = data.url;
-  if (parsedData.hasStarted) {
-    clearInterval(lobbyRefreshInterval);
-    OptionalRendering.prepareLobbyForGame();
-    dice = new Dice();
-    updateGame();
-  }
-  return parsedData;
-};
-
-const fetchGameData = async () => {
-  const data = await fetch(`/game/data`, {
-    redirect: "follow",
-  });
-  if (data.redirected) window.location.href = data.url;
-
-  return await data.json();
-};
-
 let lobby: Lobby;
 export let board: Board;
 let dice: Dice;
 
-const updateBoard = (data: GameData) => {
-  if (!board) {
-    board = new Board(data);
+export default class DataHandler {
+  constructor() {
+    DataHandler.updateLobby().then((r: RoomRO) => {
+      if (!r.hasStarted) {
+        lobbyRefreshInterval = window.setInterval(
+          () => DataHandler.updateLobby(),
+          1000
+        );
+      }
+    });
+  }
+
+  static async fetchLobbyData(): Promise<RoomRO> {
+    const data = await fetch(`/room`, {
+      redirect: "follow",
+    });
+    const parsedData: RoomRO = await data.json();
+    if (data.redirected) window.location.href = data.url;
+    if (parsedData.hasStarted) {
+      clearInterval(lobbyRefreshInterval);
+      OptionalRendering.prepareLobbyForGame();
+      dice = new Dice();
+      await DataHandler.updateGame();
+    }
+    return parsedData;
+  }
+
+  static async fetchGameData(): Promise<GameData> {
+    const data = await fetch(`/game/data`, {
+      redirect: "follow",
+    });
+    if (data.redirected) window.location.href = data.url;
+
+    return await data.json();
+  }
+
+  static updateBoard(gameData: GameData): void {
+    if (!board) {
+      board = new Board(gameData);
+      board.render();
+      return;
+    }
+    board.playersPositions = gameData;
     board.render();
-    return;
+    if (gameData.finished.length > 0) lobby.displayMedals(gameData.finished);
+    lobby.displayPlayersTimeLeft(gameData.turnTime, gameData.currentTurn);
+    if (gameData.rolledNumber) board.renderDice(gameData.rolledNumber);
   }
-  board.playersPositions = data;
-  board.render();
-  if (data.rolledNumber) board.renderDice(data.rolledNumber);
-};
 
-export const updateGame = async (): Promise<void> => {
-  const data: GameData = await fetchGameData();
-  const { turnStatus } = data;
-  updateBoard(data);
-  if (!turnStatus) {
-    board.removeAllPawns();
-    const rollButton = document.querySelector(".roll-button");
-    if (rollButton) rollButton.remove();
-  } else {
-    if (turnStatus === 1) dice.renderRollButton();
-    if (turnStatus === 2 && !document.querySelector(".pawn"))
-      board.renderTurnView(data.currentTurn, data.rolledNumber);
+  static async updateGame(): Promise<void> {
+    const gameData: GameData = await DataHandler.fetchGameData();
+    const { turnStatus } = gameData;
+    DataHandler.updateBoard(gameData);
+    if (!turnStatus) {
+      board.removeAllPawns();
+      const rollButton = document.querySelector(".roll-button");
+      if (rollButton) rollButton.remove();
+    } else {
+      if (turnStatus === 1) dice.renderRollButton();
+      if (turnStatus === 2 && !document.querySelector(".pawn")) {
+        board.renderTurnView(
+          gameData.currentTurn,
+          gameData.rolledNumber as number
+        );
+      }
+    }
+    if (!gameData.ended) {
+      setTimeout(async () => await DataHandler.updateGame(), 1000);
+    } else {
+      alert(
+        "game has ended. placements: " +
+          gameData.finished.map(
+            (player: Finish) => `${player.player.name}: ${player.placement}`
+          )
+      );
+      const timerDiv = document.querySelector("#timer-div") as HTMLElement;
+      if (timerDiv) timerDiv.style.display = "none";
+    }
   }
-  setTimeout(async () => await updateGame(), 1000);
-};
 
-export const updateLobby = async (): Promise<RoomRO> => {
-  const data = await fetchLobbyData();
-  lobby = new Lobby(data);
-  lobby.updateHTMLElement();
-  return data;
-};
+  static async updateLobby(): Promise<RoomRO> {
+    const data = await DataHandler.fetchLobbyData();
+    lobby = new Lobby(data);
+    lobby.updateHTMLElement();
+    return data;
+  }
+}
 
-updateLobby().then((r: RoomRO) => {
-  if (!r.hasStarted)
-    lobbyRefreshInterval = window.setInterval(() => updateLobby(), 1000);
-});
+// eslint-disable-next-line no-new
+new DataHandler();
 
 const readyButton = document.querySelector<HTMLInputElement>("#ready-button");
 const readyDescription = document.querySelector<HTMLElement>(
@@ -84,9 +110,11 @@ if (readyDescription && readyButton) {
     readyButton.checked
       ? (readyDescription.innerText = `I'm ready`)
       : (readyDescription.innerText = `I'm waiting`);
-    await fetch(`http://192.168.1.8:4000/room/ready/${readyButton.checked}`, {
+    readyButton.disabled = true;
+    await fetch(`/room/ready?ready=${readyButton.checked}`, {
       method: "POST",
     });
+    readyButton.disabled = false;
   });
 }
 

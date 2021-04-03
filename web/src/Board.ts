@@ -1,4 +1,4 @@
-import { Color, GameData, UserGameData } from "../types";
+import { Color, GameData, PlayerData } from "../types";
 import getPositions from "./positions.js";
 
 const boardBg = new Image();
@@ -19,7 +19,7 @@ export default class Board {
     if (!context) return;
     this.context = context;
     this.context.drawImage(boardBg, 100, 0, 600, 600);
-    this._playersPositions = data.players.map((player: UserGameData) => {
+    this._playersPositions = data.players.map((player: PlayerData) => {
       const obj = {
         color: player.color,
         data: player.positions,
@@ -28,8 +28,8 @@ export default class Board {
     });
   }
 
-  set playersPositions(data: { players: UserGameData[] }) {
-    this._playersPositions = data.players.map((player: UserGameData) => {
+  set playersPositions(data: { players: PlayerData[] }) {
+    this._playersPositions = data.players.map((player: PlayerData) => {
       const obj = {
         color: player.color,
         data: player.positions,

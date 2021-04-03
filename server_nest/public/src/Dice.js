@@ -40,17 +40,17 @@ export default class Dice {
     }
     static convertNumberToSentence(num) {
         if (num === 1)
-            return "wylosowana liczba: jeden";
+            return "jeden";
         else if (num === 2)
-            return "wylosowana liczba: dwa";
+            return "dwa";
         else if (num === 3)
-            return "wylosowana liczba: trzy";
+            return "trzy";
         else if (num === 4)
-            return "wylosowana liczba: cztery";
+            return "cztery";
         else if (num === 5)
-            return "wylosowana liczba: pięć";
+            return "pięć";
         else if (num === 6)
-            return "wylosowana liczba: sześć";
+            return "sześć";
         return "achtung";
     }
     speak(rolled) {

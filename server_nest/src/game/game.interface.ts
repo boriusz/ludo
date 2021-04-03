@@ -4,9 +4,11 @@ export interface Finish {
   placement: Placement;
 }
 export interface GameData {
-  players: PlayerData[];
+  players: PlayerData[] | PlayerDataRO[];
   finished: Finish[];
   currentTurn: Color;
+  ended?: boolean;
+  turnTime: number;
   turnStatus: 1 | 2 | null;
   rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
 }
@@ -15,6 +17,7 @@ export interface PlayerData {
   name: string;
   userId: string;
   color: Color;
+  isAFK: boolean;
   positions: number[];
 }
 
@@ -22,14 +25,6 @@ export interface PlayerDataRO {
   name: string;
   color: Color;
   positions: number[];
-}
-
-export interface GameDataRO {
-  players: PlayerDataRO[];
-  finished: Finish[];
-  currentTurn: Color;
-  turnStatus: 1 | 2 | null;
-  rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
 }
 
 export type Color = 'red' | 'blue' | 'green' | 'yellow';

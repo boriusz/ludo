@@ -9,17 +9,26 @@ import {
 } from '@nestjs/common';
 import { SessionData } from 'express-session';
 import { GameService } from './game.service';
-import { GameDataRO } from './game.interface';
+import { GameData } from './game.interface';
 
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Get('data')
-  async getGameData(@Session() session: SessionData): Promise<GameDataRO> {
+  async getGameData(@Session() session: SessionData): Promise<GameData> {
     const { roomId, userId } = session.user;
     if (!roomId) return null;
-    return await this.gameService.getGameData(roomId, userId);
+    const gameData = await this.gameService.getGameData(roomId, userId);
+    if (gameData.ended) {
+      console.log('setting timeouts for ', session.user.name);
+      setTimeout(() => {
+        session.user.inGame = false;
+        session.user.roomId = null;
+        console.log(session.user);
+      }, 1000 * 30);
+    }
+    return gameData;
   }
 
   @Get('roll')

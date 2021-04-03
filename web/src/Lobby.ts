@@ -1,6 +1,23 @@
-import { Color, RoomRO } from "../types";
+import { Color, Finish, RoomRO } from "../types";
 
 const lobbyContainer = document.querySelector("#lobby-container");
+const timerDiv = document.createElement("span");
+timerDiv.id = "timer-div";
+timerDiv.style.position = "absolute";
+timerDiv.style.display = "none";
+timerDiv.style.background = "pink";
+timerDiv.style.color = "black";
+timerDiv.style.width = "1rem";
+timerDiv.style.height = "1rem";
+if (lobbyContainer) lobbyContainer.appendChild(timerDiv);
+
+// Medals
+const medals = [
+  "../../images/first-place.png",
+  "../../images/second-place.png",
+  "../../images/third-place.png",
+  "../../images/fourth-place.png",
+];
 
 export default class Lobby {
   private readonly hasStarted: boolean;
@@ -11,21 +28,21 @@ export default class Lobby {
     this.data = players;
   }
 
-  updateHTMLElement(): void {
+  public updateHTMLElement(): void {
     const temporaryList = document.createElement("ul");
     temporaryList.id = "participants-container";
-    const parsedData = this.data;
+    const lobbyData = this.data;
     const colorsValues = {
       red: 4,
       blue: 3,
       green: 2,
       yellow: 1,
     };
-    parsedData.sort(
+    lobbyData.sort(
       (a: { color: Color }, b: { color: Color }) =>
         colorsValues[b.color] - colorsValues[a.color]
     );
-    parsedData.forEach(
+    lobbyData.forEach(
       async (participant: { isReady: boolean; name: string; color: Color }) => {
         const listElement = document.createElement("li");
 
@@ -48,11 +65,42 @@ export default class Lobby {
 
         listElement.className = "user";
         listElement.style.background = participant.color;
+        listElement.setAttribute("color", participant.color);
 
         temporaryList.appendChild(listElement);
       }
     );
     if (lobbyContainer)
       lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);
+  }
+
+  public displayPlayersTimeLeft(time: number, color: Color): void {
+    const playerContainer = document.querySelector(
+      `*[color='${color}']`
+    ) as HTMLElement;
+    if (playerContainer) {
+      timerDiv.innerText = Math.floor(time / 1000).toString();
+      timerDiv.style.display = "inline-block";
+      timerDiv.style.top = `${playerContainer.offsetTop.toString()}px`;
+      timerDiv.style.left = `${playerContainer.offsetLeft.toString()}px`;
+    }
+  }
+
+  public displayMedals(finished: Finish[]): void {
+    finished.forEach((item: Finish) => {
+      const playerContainer = document.querySelector(
+        `*[color='${item.player.color}']`
+      ) as HTMLElement;
+      if (playerContainer) {
+        if (document.querySelector(`*[medal='${item.placement.toString()}']`))
+          return;
+        playerContainer.style.backgroundImage = `url(${
+          medals[item.placement - 1]
+        })`;
+        playerContainer.style.backgroundRepeat = "no-repeat";
+        playerContainer.style.backgroundSize = "contain";
+      }
+      item.player.color;
+    });
   }
 }
