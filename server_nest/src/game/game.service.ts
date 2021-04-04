@@ -182,7 +182,7 @@ export class GameService {
       gameData.turnStatus = 1;
 
       if (player.positions.every((position: number) => position === 105)) {
-        const data = await this.playerFinished(player, gameData);
+        const data = await this.playerFinished(player, gameData, gameId);
         await this.redisCacheService.set(gameId, data);
         await this.passTurnToNextPlayer(gameId);
         return;
@@ -193,14 +193,17 @@ export class GameService {
 
   async playerFinished(
     player: PlayerData,
-    gameData: GameData
+    gameData: GameData,
+    gameId: number
   ): Promise<GameData> {
     const placement = (gameData.finished.length + 1) as 1 | 2 | 3 | 4;
     gameData.finished.push({ player, placement });
     gameData.rolledNumber = null;
     console.log(`Player ${player.name} finished game placing: ${placement}`);
-    if (gameData.finished.length === gameData.players.length)
+    if (gameData.finished.length === gameData.players.length) {
       console.log('game ended');
+      setTimeout(() => this.redisCacheService.remove(gameId, true), 1000 * 30); // remove both from db and redis
+    }
 
     return gameData;
   }

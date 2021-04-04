@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Put,
-  Query,
-  Session,
-} from '@nestjs/common';
+import { Controller, Get, Put, Query, Session } from '@nestjs/common';
 import { SessionData } from 'express-session';
 import { GameService } from './game.service';
 import { GameData } from './game.interface';
@@ -19,16 +11,7 @@ export class GameController {
   async getGameData(@Session() session: SessionData): Promise<GameData> {
     const { roomId, userId } = session.user;
     if (!roomId) return null;
-    const gameData = await this.gameService.getGameData(roomId, userId);
-    if (gameData.ended) {
-      console.log('setting timeouts for ', session.user.name);
-      setTimeout(() => {
-        session.user.inGame = false;
-        session.user.roomId = null;
-        console.log(session.user);
-      }, 1000 * 30);
-    }
-    return gameData;
+    return await this.gameService.getGameData(roomId, userId);
   }
 
   @Get('roll')
