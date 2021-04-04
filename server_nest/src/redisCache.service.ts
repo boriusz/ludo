@@ -40,6 +40,15 @@ export class RedisCacheService implements OnModuleInit {
     return gameData;
   }
 
+  async remove(key: number, delFromDb: boolean): Promise<void> {
+    await this.cacheManager.del(key.toString());
+    if (delFromDb) {
+      const room = await this.roomRepository.findOne(key);
+      await this.roomRepository.remove(room);
+    }
+    console.log('game cleared');
+  }
+
   async cacheDbData(roomId: number): Promise<void> {
     const room = await this.roomRepository.findOne(roomId);
     if (!room) return null;

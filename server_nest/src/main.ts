@@ -1,6 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
+import * as Redis from 'ioredis';
+import * as connectRedis from 'connect-redis';
+
+const RedisStore = connectRedis(session);
+
+const redisClient = new Redis({
+  host: 'localhost',
+  port: 6379,
+});
 
 declare module 'express-session' {
   export interface SessionData {
@@ -25,9 +34,10 @@ async function bootstrap() {
   app.use(
     session({
       secret: 'secretsessionkeyhehe',
+      store: new RedisStore({ client: redisClient }),
       resave: true,
       saveUninitialized: true,
-      cookie: { secure: false, httpOnly: true, maxAge: 1000 * 60 * 60 },
+      cookie: { secure: 'auto', httpOnly: true, maxAge: 1000 * 60 * 60 },
     })
   );
   await app.listen(process.env.PORT || 4000);

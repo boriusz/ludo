@@ -35,6 +35,12 @@ export class RoomController {
       return;
     }
     const responseData = await this.roomService.getResponseData(roomId);
+    if (!responseData) {
+      session.user.inGame = false;
+      session.user.roomId = null;
+      res.redirect('/room/join');
+      return;
+    }
     res.json(responseData);
     return;
   }
@@ -42,7 +48,6 @@ export class RoomController {
   @Get('join')
   @Redirect()
   async joinRoom(@Session() session: SessionData): Promise<{ url: string }> {
-    console.log('joining');
     const isUserInGame = this.roomService.checkIfUserInGame(session);
     if (isUserInGame || !session.user) return { url: '/' };
     const roomToJoin = await this.roomService.findRoomWithPlaceForNextUser();
