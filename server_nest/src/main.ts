@@ -7,8 +7,7 @@ import * as connectRedis from 'connect-redis';
 const RedisStore = connectRedis(session);
 
 const redisClient = new Redis({
-  host: 'localhost',
-  port: 6379,
+  url: process.env.REDIS_URL,
 });
 
 declare module 'express-session' {
