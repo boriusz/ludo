@@ -1,5 +1,4 @@
 import Lobby from "./Lobby.js";
-import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";
 import { Finish, GameData, RoomRO } from "../types";
 import Dice from "./Dice.js";
@@ -29,7 +28,7 @@ export default class DataHandler {
     if (data.redirected) window.location.href = data.url;
     if (parsedData.hasStarted) {
       clearInterval(lobbyRefreshInterval);
-      OptionalRendering.prepareLobbyForGame();
+      Lobby.prepareLobbyForGame();
       dice = new Dice();
       await DataHandler.updateGame();
     }
