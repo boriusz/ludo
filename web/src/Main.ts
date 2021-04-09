@@ -76,7 +76,7 @@ export default class DataHandler {
       }
     }
     if (!gameData.ended) {
-      setTimeout(async () => await DataHandler.updateGame(), 1000);
+      setTimeout(async () => await DataHandler.updateGame(), 2000);
     } else {
       alert(
         "game has ended. placements: " +
@@ -97,7 +97,6 @@ export default class DataHandler {
   }
 }
 
-// eslint-disable-next-line no-new
 new DataHandler();
 
 const readyButton = document.querySelector<HTMLInputElement>("#ready-button");
@@ -117,5 +116,3 @@ if (readyDescription && readyButton) {
     readyButton.disabled = false;
   });
 }
-
-// window.addEventListener("unload", leaveHandle);

@@ -65,12 +65,17 @@ export default class Lobby {
             lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);
     }
     displayPlayersTimeLeft(time, color) {
+        clearInterval(this.displayDataInterval);
         const playerContainer = document.querySelector(`*[color='${color}']`);
         if (playerContainer) {
-            timerDiv.innerText = Math.floor(time / 1000).toString();
-            timerDiv.style.display = "inline-block";
-            timerDiv.style.top = `${playerContainer.offsetTop.toString()}px`;
-            timerDiv.style.left = `${playerContainer.offsetLeft.toString()}px`;
+            this.displayDataInterval = setInterval(() => {
+                const elapsedDate = new Date(time).getTime() - Date.now();
+                console.log(elapsedDate);
+                timerDiv.innerText = Math.floor(elapsedDate / 1000 > 0 ? elapsedDate / 1000 : 0).toString();
+                timerDiv.style.display = "inline-block";
+                timerDiv.style.top = `${playerContainer.offsetTop.toString()}px`;
+                timerDiv.style.left = `${playerContainer.offsetLeft.toString()}px`;
+            }, 1000);
         }
     }
     displayMedals(finished) {

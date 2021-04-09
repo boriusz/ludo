@@ -47,7 +47,7 @@ export class GameService {
         turnStatus: null,
       };
     }
-    if (turnTime <= Date.now()) {
+    if (new Date(turnTime).getTime() <= Date.now()) {
       const currPlayer = gameData.players.find(
         (player: PlayerData) => player.color === gameData.currentTurn
       ) as PlayerData;
@@ -58,7 +58,7 @@ export class GameService {
       return {
         players: mappedPlayers,
         finished: mappedFinished,
-        turnTime: data.turnTime - Date.now(),
+        turnTime: data.turnTime,
         currentTurn: data.currentTurn,
         rolledNumber: isPlayersTurn ? data.rolledNumber : null,
         turnStatus: isPlayersTurn ? data.turnStatus : null,
@@ -67,7 +67,7 @@ export class GameService {
     return {
       players: mappedPlayers,
       finished,
-      turnTime: turnTime - Date.now(),
+      turnTime,
       currentTurn,
       rolledNumber: isPlayersTurn ? rolledNumber : null,
       turnStatus: isPlayersTurn ? turnStatus : null,
@@ -106,8 +106,8 @@ export class GameService {
       console.log('game ended');
       return;
     }
-    if (nextPlayer.isAFK) gameData.turnTime = Date.now() + 1000 * 11;
-    else gameData.turnTime = Date.now() + 1000 * 61;
+    if (nextPlayer.isAFK) gameData.turnTime = new Date(Date.now() + 1000 * 10);
+    else gameData.turnTime = new Date(Date.now() + 1000 * 60);
     await this.redisCacheService.set(gameId, gameData);
   }
 

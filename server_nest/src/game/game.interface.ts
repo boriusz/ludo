@@ -8,7 +8,7 @@ export interface GameData {
   finished: Finish[];
   currentTurn: Color;
   ended?: boolean;
-  turnTime: number;
+  turnTime: Date;
   turnStatus: 1 | 2 | null;
   rolledNumber: 1 | 2 | 3 | 4 | 5 | 6 | null;
 }

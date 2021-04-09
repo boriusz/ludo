@@ -6,9 +6,7 @@ import * as connectRedis from 'connect-redis';
 
 const RedisStore = connectRedis(session);
 
-const redisClient = new Redis({
-  url: process.env.REDIS_URL,
-});
+const redisClient = new Redis(process.env.REDIS_URL);
 
 declare module 'express-session' {
   export interface SessionData {

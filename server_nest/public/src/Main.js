@@ -83,7 +83,7 @@ export default class DataHandler {
                 }
             }
             if (!gameData.ended) {
-                setTimeout(() => __awaiter(this, void 0, void 0, function* () { return yield DataHandler.updateGame(); }), 1000);
+                setTimeout(() => __awaiter(this, void 0, void 0, function* () { return yield DataHandler.updateGame(); }), 2000);
             }
             else {
                 alert("game has ended. placements: " +

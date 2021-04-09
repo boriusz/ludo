@@ -68,7 +68,7 @@ export class RedisCacheService implements OnModuleInit {
     const gameData: GameData = {
       players: playersData,
       finished: [],
-      turnTime: Date.now() + 1000 * 61,
+      turnTime: new Date(Date.now() + 1000 * 60),
       turnStatus: 1,
       rolledNumber: null,
       currentTurn: colorsInGame[0],

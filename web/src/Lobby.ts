@@ -22,6 +22,7 @@ const medals = [
 export default class Lobby {
   private readonly hasStarted: boolean;
   private readonly data: { name: string; isReady: boolean; color: Color }[];
+  private displayDataInterval: any;
 
   constructor({ hasStarted, players }: RoomRO) {
     this.hasStarted = hasStarted;
@@ -74,15 +75,22 @@ export default class Lobby {
       lobbyContainer.replaceChild(temporaryList, lobbyContainer.children[0]);
   }
 
-  public displayPlayersTimeLeft(time: number, color: Color): void {
+  public displayPlayersTimeLeft(time: Date, color: Color): void {
+    clearInterval(this.displayDataInterval);
     const playerContainer = document.querySelector(
       `*[color='${color}']`
     ) as HTMLElement;
     if (playerContainer) {
-      timerDiv.innerText = Math.floor(time / 1000).toString();
-      timerDiv.style.display = "inline-block";
-      timerDiv.style.top = `${playerContainer.offsetTop.toString()}px`;
-      timerDiv.style.left = `${playerContainer.offsetLeft.toString()}px`;
+      this.displayDataInterval = setInterval(() => {
+        const elapsedDate = new Date(time).getTime() - Date.now();
+        console.log(elapsedDate);
+        timerDiv.innerText = Math.floor(
+          elapsedDate / 1000 > 0 ? elapsedDate / 1000 : 0
+        ).toString();
+        timerDiv.style.display = "inline-block";
+        timerDiv.style.top = `${playerContainer.offsetTop.toString()}px`;
+        timerDiv.style.left = `${playerContainer.offsetLeft.toString()}px`;
+      }, 1000);
     }
   }
 
