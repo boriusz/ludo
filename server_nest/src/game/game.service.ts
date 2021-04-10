@@ -106,8 +106,8 @@ export class GameService {
       console.log('game ended');
       return;
     }
-    gameData.rolledNumber = null
-    gameData.turnStatus = 1
+    gameData.rolledNumber = null;
+    gameData.turnStatus = 1;
     if (nextPlayer.isAFK) gameData.turnTime = Date.now() + 1000 * 11;
     else gameData.turnTime = Date.now() + 1000 * 61;
     await this.redisCacheService.set(gameId, gameData);
