@@ -8,12 +8,12 @@ let lobby: Lobby;
 export let board: Board;
 let dice: Dice;
 
-export default class DataHandler {
+export default class Main {
   constructor() {
-    DataHandler.updateLobby().then((r: RoomRO) => {
+    Main.updateLobby().then((r: RoomRO) => {
       if (!r.hasStarted) {
         lobbyRefreshInterval = window.setInterval(
-          () => DataHandler.updateLobby(),
+          () => Main.updateLobby(),
           1000
         );
       }
@@ -30,7 +30,7 @@ export default class DataHandler {
       clearInterval(lobbyRefreshInterval);
       Lobby.prepareLobbyForGame();
       dice = new Dice();
-      await DataHandler.updateGame();
+      await Main.updateGame();
     }
     return parsedData;
   }
@@ -58,9 +58,9 @@ export default class DataHandler {
   }
 
   static async updateGame(): Promise<void> {
-    const gameData: GameData = await DataHandler.fetchGameData();
+    const gameData: GameData = await Main.fetchGameData();
     const { turnStatus } = gameData;
-    DataHandler.updateBoard(gameData);
+    Main.updateBoard(gameData);
     if (!turnStatus) {
       board.removeAllPawns();
       const rollButton = document.querySelector(".roll-button");
@@ -75,7 +75,7 @@ export default class DataHandler {
       }
     }
     if (!gameData.ended) {
-      setTimeout(async () => await DataHandler.updateGame(), 1000);
+      setTimeout(async () => await Main.updateGame(), 1000);
     } else {
       alert(
         "game has ended. placements: " +
@@ -89,7 +89,7 @@ export default class DataHandler {
   }
 
   static async updateLobby(): Promise<RoomRO> {
-    const data = await DataHandler.fetchLobbyData();
+    const data = await Main.fetchLobbyData();
     lobby = new Lobby(data);
     lobby.updateHTMLElement();
     return data;
@@ -97,7 +97,7 @@ export default class DataHandler {
 }
 
 // eslint-disable-next-line no-new
-new DataHandler();
+new Main();
 
 const readyButton = document.querySelector<HTMLInputElement>("#ready-button");
 const readyDescription = document.querySelector<HTMLElement>(
@@ -116,5 +116,3 @@ if (readyDescription && readyButton) {
     readyButton.disabled = false;
   });
 }
-
-// window.addEventListener("unload", leaveHandle);

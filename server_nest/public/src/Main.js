@@ -8,18 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import Lobby from "./Lobby.js";
-import OptionalRendering from "./OptionalRendering.js";
 import Board from "./Board.js";
 import Dice from "./Dice.js";
 let lobbyRefreshInterval;
 let lobby;
 export let board;
 let dice;
-export default class DataHandler {
+export default class Main {
     constructor() {
-        DataHandler.updateLobby().then((r) => {
+        Main.updateLobby().then((r) => {
             if (!r.hasStarted) {
-                lobbyRefreshInterval = window.setInterval(() => DataHandler.updateLobby(), 1000);
+                lobbyRefreshInterval = window.setInterval(() => Main.updateLobby(), 1000);
             }
         });
     }
@@ -33,9 +32,9 @@ export default class DataHandler {
                 window.location.href = data.url;
             if (parsedData.hasStarted) {
                 clearInterval(lobbyRefreshInterval);
-                OptionalRendering.prepareLobbyForGame();
+                Lobby.prepareLobbyForGame();
                 dice = new Dice();
-                yield DataHandler.updateGame();
+                yield Main.updateGame();
             }
             return parsedData;
         });
@@ -66,9 +65,9 @@ export default class DataHandler {
     }
     static updateGame() {
         return __awaiter(this, void 0, void 0, function* () {
-            const gameData = yield DataHandler.fetchGameData();
+            const gameData = yield Main.fetchGameData();
             const { turnStatus } = gameData;
-            DataHandler.updateBoard(gameData);
+            Main.updateBoard(gameData);
             if (!turnStatus) {
                 board.removeAllPawns();
                 const rollButton = document.querySelector(".roll-button");
@@ -83,7 +82,7 @@ export default class DataHandler {
                 }
             }
             if (!gameData.ended) {
-                setTimeout(() => __awaiter(this, void 0, void 0, function* () { return yield DataHandler.updateGame(); }), 1000);
+                setTimeout(() => __awaiter(this, void 0, void 0, function* () { return yield Main.updateGame(); }), 1000);
             }
             else {
                 alert("game has ended. placements: " +
@@ -96,14 +95,14 @@ export default class DataHandler {
     }
     static updateLobby() {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield DataHandler.fetchLobbyData();
+            const data = yield Main.fetchLobbyData();
             lobby = new Lobby(data);
             lobby.updateHTMLElement();
             return data;
         });
     }
 }
-new DataHandler();
+new Main();
 const readyButton = document.querySelector("#ready-button");
 const readyDescription = document.querySelector("#ready-description");
 if (readyDescription && readyButton) {

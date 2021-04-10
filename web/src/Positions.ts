@@ -1,56 +1,61 @@
 import { Color } from "../types";
-const getPositions = (
-  color: Color,
-  positions: number[]
-): { x: number; y: number }[] | null => {
-  if (color === "red") {
-    return positions.map((position: number, index: number) => {
-      if (position === 0) return { ...redPos[0][index], isHome: true };
-      if (position > 105) return redPos[105][index];
-      if (position >= 100)
-        return redPos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
-      return redPos?.[position as keyof typeof redPos][index];
-    });
-  }
 
-  if (color === "blue") {
-    return positions.map((position: number, index: number) => {
-      if (position === 0) return { ...bluePos[0][index], isHome: true };
-      if (position > 105) return bluePos[105][index];
-      if (position >= 100)
-        return bluePos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
-      if (position + 13 > 52)
-        return redPos?.[(position - (52 - 13)) as keyof typeof redPos][index];
+export default class Positions {
+  public static getPositions(
+    color: Color,
+    positions: number[]
+  ): { x: number; y: number }[] | null {
+    if (color === "red") {
+      return positions.map((position: number, index: number) => {
+        if (position === 0) return { ...redPos[0][index], isHome: true };
+        if (position > 105) return redPos[105][index];
+        if (position >= 100)
+          return redPos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
+        return redPos?.[position as keyof typeof redPos][index];
+      });
+    }
 
-      return redPos?.[(position + 13) as keyof typeof redPos][index];
-    });
-  }
+    if (color === "blue") {
+      return positions.map((position: number, index: number) => {
+        if (position === 0) return { ...bluePos[0][index], isHome: true };
+        if (position > 105) return bluePos[105][index];
+        if (position >= 100)
+          return bluePos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
+        if (position + 13 > 52)
+          return redPos?.[(position - (52 - 13)) as keyof typeof redPos][index];
 
-  if (color === "green") {
-    return positions.map((position: number, index: number) => {
-      if (position === 0) return { ...greenPos[0][index], isHome: true };
-      if (position > 105) return greenPos[105][index];
-      if (position >= 100)
-        return greenPos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
-      if (position + 26 > 52)
-        return redPos?.[(position - (52 - 26)) as keyof typeof redPos][index];
-      return redPos?.[(position + 26) as keyof typeof redPos][index];
-    });
-  }
+        return redPos?.[(position + 13) as keyof typeof redPos][index];
+      });
+    }
 
-  if (color === "yellow") {
-    return positions.map((position: number, index: number) => {
-      if (position === 0) return { ...yellowPos[0][index], isHome: true };
-      if (position > 105) return yellowPos[105][index];
-      if (position >= 100)
-        return yellowPos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
-      if (position + 39 > 52)
-        return redPos?.[(position - (52 - 39)) as keyof typeof redPos][index];
-      return redPos?.[(position + 39) as keyof typeof redPos][index];
-    });
+    if (color === "green") {
+      return positions.map((position: number, index: number) => {
+        if (position === 0) return { ...greenPos[0][index], isHome: true };
+        if (position > 105) return greenPos[105][index];
+        if (position >= 100)
+          return greenPos[position as 100 | 101 | 102 | 103 | 104 | 105][index];
+        if (position + 26 > 52)
+          return redPos?.[(position - (52 - 26)) as keyof typeof redPos][index];
+        return redPos?.[(position + 26) as keyof typeof redPos][index];
+      });
+    }
+
+    if (color === "yellow") {
+      return positions.map((position: number, index: number) => {
+        if (position === 0) return { ...yellowPos[0][index], isHome: true };
+        if (position > 105) return yellowPos[105][index];
+        if (position >= 100)
+          return yellowPos[position as 100 | 101 | 102 | 103 | 104 | 105][
+            index
+          ];
+        if (position + 39 > 52)
+          return redPos?.[(position - (52 - 39)) as keyof typeof redPos][index];
+        return redPos?.[(position + 39) as keyof typeof redPos][index];
+      });
+    }
+    return null;
   }
-  return null;
-};
+}
 
 const redPos = {
   0: [
@@ -546,4 +551,3 @@ const yellowPos = {
     { x: 300, y: 340 },
   ],
 };
-export default getPositions;

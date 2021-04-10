@@ -11,7 +11,8 @@
     const text = document.querySelector('#text')
     const submit = document.querySelector('#submit')
 
-    submit.addEventListener('click', async () => {
+    submit.addEventListener('click', async (e) => {
+        e.target.disabled = true
         const username = text.value
         const body = JSON.stringify({username})
         const response = await fetch('/setUsername', {

@@ -1,5 +1,5 @@
 import { Color, GameData, PlayerData } from "../types";
-import getPositions from "./positions.js";
+import Positions from "./Positions.js";
 
 const boardBg = new Image();
 boardBg.src = "../../images/board.png";
@@ -55,7 +55,7 @@ export default class Board {
         color: Object.keys(player)[0] as Color,
         positions: player[Object.keys(player)[0]],
       };
-      const positions = getPositions(obj.color, obj.positions);
+      const positions = Positions.getPositions(obj.color, obj.positions);
       if (!positions) return;
       for (const position of positions)
         if (position) this.drawCircle(position.x, position.y, obj.color);
@@ -92,7 +92,10 @@ export default class Board {
         Object.keys(position)[0] === currentTurn
     );
     if (!currentPlayer) return;
-    const positions = getPositions(currentTurn, currentPlayer[currentTurn]);
+    const positions = Positions.getPositions(
+      currentTurn,
+      currentPlayer[currentTurn]
+    );
     positions?.forEach(
       (
         position: { x: number; y: number; isHome?: boolean } | null,
@@ -118,7 +121,7 @@ export default class Board {
               return item + rolledNumber;
             }
           );
-          const possibleNextPosition = getPositions(
+          const possibleNextPosition = Positions.getPositions(
             currentTurn,
             elapsedPositions
           );

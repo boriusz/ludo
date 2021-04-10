@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import getPositions from "./positions.js";
+import Positions from "./Positions.js";
 const boardBg = new Image();
 boardBg.src = "../../images/board.png";
 const diceImg = new Image();
@@ -56,7 +56,7 @@ export default class Board {
                 color: Object.keys(player)[0],
                 positions: player[Object.keys(player)[0]],
             };
-            const positions = getPositions(obj.color, obj.positions);
+            const positions = Positions.getPositions(obj.color, obj.positions);
             if (!positions)
                 return;
             for (const position of positions)
@@ -80,7 +80,7 @@ export default class Board {
         const currentPlayer = this._playersPositions.find((position) => Object.keys(position)[0] === currentTurn);
         if (!currentPlayer)
             return;
-        const positions = getPositions(currentTurn, currentPlayer[currentTurn]);
+        const positions = Positions.getPositions(currentTurn, currentPlayer[currentTurn]);
         positions === null || positions === void 0 ? void 0 : positions.forEach((position, index) => {
             var _a;
             if (!position)
@@ -105,7 +105,7 @@ export default class Board {
                         return item + rolledNumber - 52 + 100;
                     return item + rolledNumber;
                 });
-                const possibleNextPosition = getPositions(currentTurn, elapsedPositions);
+                const possibleNextPosition = Positions.getPositions(currentTurn, elapsedPositions);
                 const nextPosition = possibleNextPosition === null || possibleNextPosition === void 0 ? void 0 : possibleNextPosition[index];
                 if (nextPosition) {
                     const possiblePawn = document.createElement("div");

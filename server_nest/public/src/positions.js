@@ -1,56 +1,58 @@
-const getPositions = (color, positions) => {
-    if (color === "red") {
-        return positions.map((position, index) => {
-            if (position === 0)
-                return Object.assign(Object.assign({}, redPos[0][index]), { isHome: true });
-            if (position > 105)
-                return redPos[105][index];
-            if (position >= 100)
-                return redPos[position][index];
-            return redPos === null || redPos === void 0 ? void 0 : redPos[position][index];
-        });
+export default class Positions {
+    static getPositions(color, positions) {
+        if (color === "red") {
+            return positions.map((position, index) => {
+                if (position === 0)
+                    return Object.assign(Object.assign({}, redPos[0][index]), { isHome: true });
+                if (position > 105)
+                    return redPos[105][index];
+                if (position >= 100)
+                    return redPos[position][index];
+                return redPos === null || redPos === void 0 ? void 0 : redPos[position][index];
+            });
+        }
+        if (color === "blue") {
+            return positions.map((position, index) => {
+                if (position === 0)
+                    return Object.assign(Object.assign({}, bluePos[0][index]), { isHome: true });
+                if (position > 105)
+                    return bluePos[105][index];
+                if (position >= 100)
+                    return bluePos[position][index];
+                if (position + 13 > 52)
+                    return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 13))][index];
+                return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 13)][index];
+            });
+        }
+        if (color === "green") {
+            return positions.map((position, index) => {
+                if (position === 0)
+                    return Object.assign(Object.assign({}, greenPos[0][index]), { isHome: true });
+                if (position > 105)
+                    return greenPos[105][index];
+                if (position >= 100)
+                    return greenPos[position][index];
+                if (position + 26 > 52)
+                    return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 26))][index];
+                return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 26)][index];
+            });
+        }
+        if (color === "yellow") {
+            return positions.map((position, index) => {
+                if (position === 0)
+                    return Object.assign(Object.assign({}, yellowPos[0][index]), { isHome: true });
+                if (position > 105)
+                    return yellowPos[105][index];
+                if (position >= 100)
+                    return yellowPos[position][index];
+                if (position + 39 > 52)
+                    return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 39))][index];
+                return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 39)][index];
+            });
+        }
+        return null;
     }
-    if (color === "blue") {
-        return positions.map((position, index) => {
-            if (position === 0)
-                return Object.assign(Object.assign({}, bluePos[0][index]), { isHome: true });
-            if (position > 105)
-                return bluePos[105][index];
-            if (position >= 100)
-                return bluePos[position][index];
-            if (position + 13 > 52)
-                return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 13))][index];
-            return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 13)][index];
-        });
-    }
-    if (color === "green") {
-        return positions.map((position, index) => {
-            if (position === 0)
-                return Object.assign(Object.assign({}, greenPos[0][index]), { isHome: true });
-            if (position > 105)
-                return greenPos[105][index];
-            if (position >= 100)
-                return greenPos[position][index];
-            if (position + 26 > 52)
-                return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 26))][index];
-            return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 26)][index];
-        });
-    }
-    if (color === "yellow") {
-        return positions.map((position, index) => {
-            if (position === 0)
-                return Object.assign(Object.assign({}, yellowPos[0][index]), { isHome: true });
-            if (position > 105)
-                return yellowPos[105][index];
-            if (position >= 100)
-                return yellowPos[position][index];
-            if (position + 39 > 52)
-                return redPos === null || redPos === void 0 ? void 0 : redPos[(position - (52 - 39))][index];
-            return redPos === null || redPos === void 0 ? void 0 : redPos[(position + 39)][index];
-        });
-    }
-    return null;
-};
+}
 const redPos = {
     0: [
         { x: 120, y: 80 },
@@ -545,5 +547,4 @@ const yellowPos = {
         { x: 300, y: 340 },
     ],
 };
-export default getPositions;
-//# sourceMappingURL=positions.js.map
+//# sourceMappingURL=Positions.js.map
