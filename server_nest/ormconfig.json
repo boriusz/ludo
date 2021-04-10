@@ -1,0 +1,15 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "postgres",
+  "password": "postgres",
+  "database": "chinol",
+  "synchronize": true,
+  "logging": false,
+  "migrationsRun": true,
+  "entities": [
+    "dist/**/**.entity{.ts,.js}"
+  ],
+  "keepConnectionAlive": true
+}
