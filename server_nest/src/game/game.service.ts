@@ -103,9 +103,11 @@ export class GameService {
       (player: PlayerData) => player.color === gameData.currentTurn
     ) as PlayerData;
     if (!nextPlayer) {
-      console.log('game ended');
+      console.log('endd');
       return;
     }
+    gameData.rolledNumber = null;
+    gameData.turnStatus = 1;
     if (nextPlayer.isAFK) gameData.turnTime = new Date(Date.now() + 1000 * 10);
     else gameData.turnTime = new Date(Date.now() + 1000 * 60);
     await this.redisCacheService.set(gameId, gameData);
