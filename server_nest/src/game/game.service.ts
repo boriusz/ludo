@@ -234,7 +234,7 @@ export class GameService {
             colorsValues[player.color] * 13 + position > 52
               ? colorsValues[player.color] * 13 + position - 52
               : colorsValues[player.color] * 13 + position;
-          if (preyPosition === lastlyMovedPawn) return 0;
+          if (preyPosition === lastlyMovedPawn && position < 100) return 0;
           return position;
         });
       });
